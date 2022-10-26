@@ -24,27 +24,25 @@ Note that it is better to be accurate rather than precise.
 
 ## Actual path
 Below is the path taken by Sylvain from a parking garage at the train station to the MSH building in [Belval](https://www.luxatlas.lu/#b=2362&o=null&f=1071&ob=100&oo=100&of=50&x=662203&y=6360423&z=16.541415223113926). The path goes through a pedestrian area surrounded by tall structures and buildings.
-```{r actual path}
-# create static image
-```
+
+[Image of just path]
 
 ## Sensed path - GNSS data
 Describe error over space-time
 
+[Image of actual path and GNSS path (no HDOP)]
+
 ## 3D visualization - what causes error
+We know that buildings interfere with GNSS precision - but let's create a map showing building heights with the paths overlayed.
+
+Discuss whether we can see why the error is going in one way or the other.
+
+
 
 ## HDOP metric vs sat count vs ground-truthed error
 
-```{r cars}
-summary(cars)
-```
 
-## Including Plots
+## Comparison of errors (?) and wrap up
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
