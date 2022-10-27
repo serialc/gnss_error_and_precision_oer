@@ -1,7 +1,7 @@
 #install.packages("plotrix")
 library(plotrix) # for plotting circles
 
-sv <- read.table('data/sylvain_sv.csv', sep=',', header = TRUE)
+sv <- read.table('data\SD00262-GPS-0186_walk_Belval_PR_to_MSH_sv.csv', sep=',', header = TRUE)
 
 # replace SNR NA values with 0
 sv$SNR[is.na(sv$SNR)] <- 0
