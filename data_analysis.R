@@ -30,5 +30,5 @@ sapply(split(sv, sv$satnum), function(s) {
   points(s$pathx, s$pathy, pch=21, cex=s$SNR/30, col="black", lwd=3)
   points(s$pathx, s$pathy, pch=19, cex=s$SNR/30, col=col_vector[s$satnum], asp=1)
 })
-shadowtext(c(0,0,0),c(0,45,90), labels = c("90°\nZenith","45°","0°\nHorizon"), bg="white", col="black", r=0.1)
+shadowtext(c(0,0,0),c(0,-45,-90), labels = c("90°\nZenith","45°","0°\nHorizon"), bg="white", col="black", r=0.1)
 shadowtext(c(0,70,0,-70), c(70,0,-70,0), labels = c("N", "E", "S", "W"), bg="white", col="black", r=0.1)
