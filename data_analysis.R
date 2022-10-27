@@ -42,6 +42,4 @@ plotSats <- function(source_file) {
 for(sf in list.files('processing/sv_data/')) {
   plotSats(sf)
 }
-
-  
                                                                                                                                     
