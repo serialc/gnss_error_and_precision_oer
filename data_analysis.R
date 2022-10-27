@@ -22,13 +22,13 @@ col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_co
 par(mar=rep(0,4))
 
 plot(NULL, xlim=c(-90,90), ylim=c(-90,90), pch=21, cex=sv$SNR/30, bg=col_vector[sv$satnum], asp=1, lwd=3, col="black")
-sapply(split(sv, sv$satnum), function(s) {
-  points(s$pathx, s$pathy, pch=21, cex=s$SNR/30, col="black", lwd=3)
-  points(s$pathx, s$pathy, pch=19, cex=s$SNR/30, col=col_vector[s$satnum], asp=1)
-})
 lines(c(0,0), c(-90,90))
 lines(c(-90,90), c(0,0))
 draw.circle(0,0,90,100)
 draw.circle(0,0,45,100)
-shadowtext(c(0,0,0),c(0,45,90), labels = c("90\nZenith",45,"0\nHorizon"), col="white")
-shadowtext(c(0,70,0,-70), c(70,0,-70,0), labels = c("N", "E", "S", "W"), col="white")
+sapply(split(sv, sv$satnum), function(s) {
+  points(s$pathx, s$pathy, pch=21, cex=s$SNR/30, col="black", lwd=3)
+  points(s$pathx, s$pathy, pch=19, cex=s$SNR/30, col=col_vector[s$satnum], asp=1)
+})
+shadowtext(c(0,0,0),c(0,45,90), labels = c("90°\nZenith","45°","0°\nHorizon"), bg="white", col="black", r=0.1)
+shadowtext(c(0,70,0,-70), c(70,0,-70,0), labels = c("N", "E", "S", "W"), bg="white", col="black", r=0.1)
