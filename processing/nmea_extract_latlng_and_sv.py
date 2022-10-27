@@ -38,7 +38,11 @@ for fp in sys.argv[1:]:
             # GNSS Satellite views (locations)
             if p[0] == '$GPGSV':
                 # validate checksum (https://gist.github.com/MattWoodhead/0bc2b3066796e19a3a350689b43b50ab)
-                nmeapckg, checksum = line.strip('$\n').split('*')
+                try:
+                    nmeapckg, checksum = line.strip('$\n').split('*')
+                except ValueError:
+                    print("Error with the following line in file: " + fn + "\n" + line)
+                    exit()
                 calc_checksum = reduce(operator.xor, (ord(s) for s in nmeapckg), 0)
                 if int(checksum, base=16) != calc_checksum:
                     continue
