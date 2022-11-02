@@ -23,14 +23,33 @@ A brief reminder of the difference between accuracy and precision:
 Note that it is better to be accurate rather than precise.
 
 ## Actual path
-Below is the path taken by Sylvain from a parking garage at the train station to the MSH building in [Belval](https://www.luxatlas.lu/#b=2362&o=null&f=1071&ob=100&oo=100&of=50&x=662203&y=6360423&z=16.541415223113926). The path goes through a pedestrian area surrounded by tall structures and buildings.
+Below is a walk tour in Belvalm, starting next to the renovated furnaces, going along the new shopping center, then to the Park "Um Belval" on the west and ending in front of the Maison des Sciences Humaines (MSH). [Belval](https://www.luxatlas.lu/#b=2362&o=null&f=1071&ob=100&oo=100&of=50&x=662203&y=6360423&z=16.541415223113926). The path goes through a variety of  urban settings surrounded by tall structures and buildings, and open field area.
 
-[Image of just path]
+![Trace of a walk in Belval, Luxembourg](./images/BelvalWalk_trace.svg)
+The trace (green lines) is digitized manually in QGIS.
+
 
 ## Sensed path - GNSS data
+
+We captured the NMEA sentences with an App installed on the smartphone. 
+The points where retrieved using a python script and mapped over the digitized trace of the walk.
+
 Describe error over space-time
 
-[Image of actual path and GNSS path (no HDOP)]
+![Image of actual path and GNSS points](./images/BelvalWalk_trace with gps.svg)
+
+
+```{r}
+library("stringr")
+dferr <- read.table("./processing/trace_data/BelvalWT-snap-deviation.csv", sep = ",", header = T)
+dferr[c("h", "m", "s")] <- str_split_fixed(dferr$time, ":",3)
+dferr$ntime <- as.numeric(dferr$h) * 60 * 60 + as.numeric(dferr$m) * 60 + as.numeric(dferr$s )
+mint <- min(dferr$ntime)
+dferr$ntime <- dferr$ntime - mint
+plot(dferr$ntime, dferr$deviation, type = "l", xlab = "Time (s)", ylab = "Deviation from trace (m)")
+
+```
+
 
 ## 3D visualization - what causes error
 We know that buildings interfere with GNSS precision - but let's create a map showing building heights with the paths overlayed.
