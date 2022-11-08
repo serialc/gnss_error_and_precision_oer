@@ -32,9 +32,7 @@ A brief reminder of the difference between accuracy and precision:
 Note that it is better to be accurate than precise.
 
 ## Outline
-This resource will analyze the data collected along a walk through Belval, LUxembourg, while carrying a GNSS device (model XXXX).
-
-ADD TABLE OF CONTENTS
+This resource will analyze the data collected along a walk through Belval, LUxembourg, while carrying a GNSS device (Crosscall Trekker-M1 Core).
 
 ## Actual path
 Below is a walked tour around Belval, starting in the east next to the furnaces, going along the shopping center (Belval Plaza), then to the Park "Um Belval" on the west and returning, ending in front of the Maison des Sciences Humaines (MSH). 
@@ -55,13 +53,17 @@ The path in the figure above (green line) was manually digitized using QGIS acco
 GNSS devices decode satellite signals to determine their location.
 THe process locates, with some error, the device and the satellites at a point of time.
 This decoding process creates a diversity of data, such as device location (lat/long), location error, and elevation, among others.
-This data in raw form is called NMEA data.
+This data in raw form is called NMEA data after the organization that defined the standard, the National Marine Electronics Association. There are different versions of the standard.
 Rather than nicely structured data it can be quite messy or corrupted and needs further refinement before being easily usable.
 Many devices and data analysis tools will process the NMEA data for you so that it is already comprehensible in data or visual form.
 
+```
+
+```
+
 PERHAPS WE ONLY USE THE PORTION OF THE PATH THAT HAS BOTH DEVICES RECORDING?
 
-We captured the NMEA sentences with a smartphone App called (NAME?).
+We captured the NMEA sentences with an Android smartphone App called (NMEA Tools Version 2.7.35).
 The NMEA data was processed and the lat/long points extracted using a python script (LINK).
 In the figure below the lat/long points are added to the map of the walked path.
 
