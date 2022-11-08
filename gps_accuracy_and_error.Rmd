@@ -2,7 +2,10 @@
 title: "GNSS/GPS accuracy and error"
 author: "Sylvain Klein & Cyrille Médard de Chardon"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document: 
+    toc: yes
+    self_contained: no
 ---
 
 ```{r setup, include=FALSE}
