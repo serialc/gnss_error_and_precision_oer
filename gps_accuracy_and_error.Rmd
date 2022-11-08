@@ -11,7 +11,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # GNSS accuracy & error
 
-A Global Navigation Satellite System (GNSS), also commonly called a Global Positioning System (GPS) which is actually a brand of GNSS, are commonly believed to provide the best quality georeferencing of points. Georeferencing is the process of associating points on the surface of the Earth to a standardized coordinate system. This allows us to say the Eiffel Tower is located at 29.9792° N, 31.1342° E using the WGS 84 geographic coordinate system. This is typically just referred to as a latitude and longitude without any thought to what geographic coordinate system we are using. While coordinates can be [extremely precise](https://xkcd.com/2170/) the question this resource aims to explore is how *accurate* are the devices that we use to record coordinates and what impacts their accuracy.
+## Introduction
+
+A Global Navigation Satellite System (GNSS), also commonly called a Global Positioning System (GPS) which is actually a brand of GNSS, is a relatively easy and affordable way to georeference points.
+Georeferencing is the process of associating points on the surface of the Earth to a standardized coordinate system.
+This allows us to say the Eiffel Tower is located at 29.9792° N, 31.1342° E using the WGS 84 geographic coordinate system.
+This is typically just referred to as a latitude and longitude without any thought to what geographic coordinate system we are using.
+While lat/long coordinates can be [extremely precise](https://xkcd.com/2170/) the question this resource aims to explore is how *accurate* are GNSS recording devices and what impacts their accuracy.
 
 A brief reminder of the difference between accuracy and precision:
 
@@ -20,29 +26,55 @@ A brief reminder of the difference between accuracy and precision:
 |2.017|2.8325|Precise but not accurate|
 |2.017|2|Accurate but not precise|
 |2.017|2.017|Accurate and precise|
-Note that it is better to be accurate rather than precise.
+Note that it is better to be accurate than precise.
+
+## Outline
+This resource will analyze the data collected along a walk through Belval, LUxembourg, while carrying a GNSS device (model XXXX).
+
+ADD TABLE OF CONTENTS
 
 ## Actual path
 Below is a walked tour around Belval, starting in the east next to the furnaces, going along the shopping center (Belval Plaza), then to the Park "Um Belval" on the west and returning, ending in front of the Maison des Sciences Humaines (MSH). 
 
-[Belval - not sure we need this](https://www.luxatlas.lu/#b=2362&o=null&f=1071&ob=100&oo=100&of=50&x=662203&y=6360423&z=16.541415223113926).
+[Belval - not sure we need this](https://www.luxatlas.lu/#b=2362&o=null&f=1071&ob=100&oo=100&of=50&x=662203&y=6360423&z=16.541415223113926). (CHECK WHEN I HAVE WIFI)
 
-Note that the walked path goes through an urban area with tall structures and buildings and an open green space.
+Note that the walked path starts and ends in an urban area with tall structures, with some travel trough open green spaces in-between.
 
 ![Trace of a walk in Belval, Luxembourg](./images/BelvalWalk_trace.svg)
-Need a North arrow.
+**Figure 1: Trace of walked path.**
 
-The path in the figure above (green line) was manually digitized using QGIS.
+NEED A NORTH ARROW
+
+The path in the figure above (green line) was manually digitized using QGIS according to the route taken.
 
 ## Sensed path - GNSS data
 
-We captured the NMEA sentences with an App installed on the smartphone. 
-The points where retrieved using a python script and mapped over the digitized trace of the walk.
+GNSS devices decode satellite signals to determine their location.
+THe process locates, with some error, the device and the satellites at a point of time.
+This decoding process creates a diversity of data, such as device location (lat/long), location error, and elevation, among others.
+This data in raw form is called NMEA data.
+Rather than nicely structured data it can be quite messy or corrupted and needs further refinement before being easily usable.
+Many devices and data analysis tools will process the NMEA data for you so that it is already comprehensible in data or visual form.
 
-Describe error over space-time
+PERHAPS WE ONLY USE THE PORTION OF THE PATH THAT HAS BOTH DEVICES RECORDING?
+
+We captured the NMEA sentences with a smartphone App called (NAME?).
+The NMEA data was processed and the lat/long points extracted using a python script (LINK).
+In the figure below the lat/long points are added to the map of the walked path.
+
+Note that points can easily be mapped or graphed as lines as well as points.
+While using lines is beneficial in showing continuity or direction, lines can also obscure points that communicate information, such as the accuracy of data (a straight line can either mean a straight path or missing data) or changes in speed.
+
+The maps and figures will show point and line data as appropriate.
 
 ![Image of actual path and GNSS points](./images/BelvalWalk_trace with gps.svg)
-Need a North arrow.
+**Figure 2: Overlay of GNSS sensed path over walked path.**
+
+NEED NORTH ARROW
+
+In the figure above we see the GNSS device data following closely the taken path in the western area, but no the south-east.
+
+Temporally, we can see in the graph below that there is a lot of deviation from the taken path at the start and end of the walk.
 
 ```{r echo=FALSE, warning=FALSE}
 library("stringr")
@@ -56,13 +88,20 @@ df <- merge(dferr, dfs[,c("rid", "X_count", "X_sum",  "X_mean", "X_median", "X_s
 plot(df$ntime/60, df$deviation, type = "n", xlab = "Time (minutes)", ylab = "Deviation from trace (m)")
 abline(h=1:3*10, col="grey")
 lines(df$ntime/60, df$deviation, lwd=2)
+```
+**Figure 3: Plot of distance error between traced and sensed paths over time.**
+
+PERHAPS IT'S ALSO DUE TO SOMETHING ELSE? LET'S MAP SATELLITES COUNT.
+
+```{r satcount along route, echo=FALSE}
 
 ```
 
-## 3D visualization - what causes error
+## What causes error?
 
-We know that buildings interfere with GNSS precision - but let's create a map showing building heights with the paths overlayed.
+We know that buildings interfere with GNSS precision. Let's visualize building heights along the walked route.
 
+(ADD AN IFRAME TO CONTAIN THIS and then a link to the full page visualization)
 [see GPS path and 3D buildings](https://map.geoportail.lu/theme/main?bgLayer=basemap_2015_global&version=3&zoom=14&X=661470&Y=6361338&lang=en&rotation=0&layers=&opacities=&crosshair=false&3d_layers=ACT2022_BD_L_BATI3D_LOD2%2CVDL2022_LOD2_IMPORT_old%2CBridges_LOD2%2CACT2019_LiDAR_Bridges_LOD1%2CACT2019_LiDAR_Vegetation&3d_enabled=true&3d_lon=5.94209&3d_lat=49.49240&3d_elevation=1385&3d_heading=360.000&3d_pitch=-40.388&map_id=3a4b6e155fce4f448337ebe41ed6c005&embedded=true)
 
 The mean height 50 m around the points is now overlayed in red with the deviation in meter.
@@ -79,15 +118,20 @@ mtext(side=4,line = 2, "Surrounding mean height within 50 metres (m)", col=2)
 legend('topleft', legend = c("Error distance", "Mean surrounding (50m) height of location"), lwd=2, col=c(1,2))
 
 ```
+**Figure 4: Plot of surrounding building heights and error along the walked path.**
 
-Study the graph above. Note how when our error, the distance between our know path, and the sensed path increases we also see an increase in the surrounding structure and building heights.
+Study the graph above. Note how when the error, the distance between the know path and the sensed path, increases according to the surrounding structure heights.
 
-Clearly structures prevent our sensing device from capturing satellite signals.
+Clearly structures prevent the sensing device from capturing satellite signals.
 
 ## HDOP metric vs sat count vs ground-truthed error
 
 
 ## Comparison of errors (?) and wrap up
+
+## NOtes
+
+- While we used a smartphone app to record NMEA data, this may not the same as using smartphone location data, such as that positioned in Gooble Maps, which may use other measures such as proximity to cellular towers or Wi-Fi hotspots to georeference location.
 
 
 
