@@ -1,4 +1,5 @@
-# gnss_error_and_precision_oer
-A short lesson on GNSS error and precision. Part of the digilego project.
+# GNSS accuracy and error
+A short lesson on GNSS accuracy and error.
+Part of the [digilego project](https://digilego.eu).
 
 A [great resource](http://aprs.gids.nl/nmea/) for understanding NMEA
