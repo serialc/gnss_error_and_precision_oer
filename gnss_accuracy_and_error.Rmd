@@ -63,7 +63,7 @@ Many devices and data analysis tools will process the NMEA data for you so that 
 
 PERHAPS WE ONLY USE THE PORTION OF THE PATH THAT HAS BOTH DEVICES RECORDING?
 
-We captured the NMEA sentences with an Android smartphone App called (NMEA Tools Version 2.7.35).
+We captured the NMEA sentences with an Android smartphone App called NMEA Tools Version 2.7.35.
 The NMEA data was processed and the lat/long points extracted using a python script (LINK).
 In the figure below the lat/long points are added to the map of the walked path.
 
@@ -134,9 +134,12 @@ Clearly structures prevent the sensing device from capturing satellite signals.
 
 ## Comparison of errors (?) and wrap up
 
+Other sources of errors: weather, ..
+
 ## NOtes
 
 - While we used a smartphone app to record NMEA data, this may not the same as using smartphone location data, such as that positioned in Gooble Maps, which may use other measures such as proximity to cellular towers or Wi-Fi hotspots to georeference location.
+
 
 
 
