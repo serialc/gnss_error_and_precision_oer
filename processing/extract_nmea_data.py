@@ -39,10 +39,10 @@ for fp in sys.argv[1:]:
     fsv.write('rid,llid,time,satnum,elev,azim,SNR\n')
 
     fmv = open(mvdp + fn.split('.')[0] + '.csv', 'w')
-    fmv.write('rid,llid,dt,warning,lat,lng,spd_knots,bearing,mag_var\n')
+    fmv.write('rid,llid,dt,warning,lat,lng,spd_knots,spd_ms,bearing,mag_var\n')
 
     fas = open(asdp + fn.split('.')[0] + '.csv', 'w')
-    fas.write('rid,llid,mode,fix,satused,pdop,hdop,vdop' + ','.join(['s' + str(s) for s in range(1,13)]) + '\n')
+    fas.write('rid,llid,mode,fix,satused,pdop,hdop,vdop,' + ','.join(['s' + str(s) for s in range(1,13)]) + '\n')
 
     ftg = open(tgdp + fn.split('.')[0] + '.csv', 'w')
     ftg.write('rid,llid,true_bear,magn_bear,spd_knots,spd_kmh\n')
@@ -175,8 +175,8 @@ for fp in sys.argv[1:]:
                 if p[11] == 'W':
                     magvar = '-' + magvar
 
-                # rid,llid,dt,warning,lat,lng,spd_knots,bearing,mag_var
-                fmv.write(str(mv_rcount) + dlm + str(ll_rcount) + dlm + dt + dlm + warn + dlm + str(lat) + dlm + str(lng) + dlm + str(spd_ms) + dlm + bearing + dlm + str(magvar) + "\n")
+                # rid,llid,dt,warning,lat,lng,spd_knots,spd_ms,bearing,mag_var
+                fmv.write(str(mv_rcount) + dlm + str(ll_rcount) + dlm + dt + dlm + warn + dlm + str(lat) + dlm + str(lng) + dlm + p[7] + dlm + str(spd_ms) + dlm + bearing + dlm + str(magvar) + "\n")
 
                 mv_rcount += 1
                 # end of GPRMC - continue to next line
@@ -254,3 +254,4 @@ for fp in sys.argv[1:]:
     fmv.close()
     fas.close()
     ftg.close()
+    fgl.close()

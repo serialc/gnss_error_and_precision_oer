@@ -22,7 +22,7 @@ This allows us to say the Eiffel Tower is located at 29.9792° N, 31.1342° E us
 This is typically just referred to as a latitude and longitude without any thought to what geographic coordinate system we are using.
 While lat/long coordinates can be [extremely precise](https://xkcd.com/2170/) the question this resource aims to explore is how *accurate* are GNSS recording devices and what impacts their accuracy.
 
-A brief reminder of the difference between accuracy and precision:
+A brief reminder of the difference between **accuracy** and **precision**:
 
 | Value | Measurement | Definition |
 |---|---|---|
@@ -32,26 +32,24 @@ A brief reminder of the difference between accuracy and precision:
 Note that it is better to be accurate than precise.
 
 ## Outline
-This resource will analyze the data collected along a walk through Belval, LUxembourg, while carrying a GNSS device (Crosscall Trekker-M1 Core).
+This resource will analyze the accuracy and error of location data collected along a walk through Belval, LUxembourg, using a GNSS device (Crosscall Trekker-M1 Core).
 
 ## Actual path
-Below is a walked tour around Belval, starting in the east next to the furnaces, going along the shopping center (Belval Plaza), then to the Park "Um Belval" on the west and returning, ending in front of the Maison des Sciences Humaines (MSH). 
-
-[Belval - not sure we need this](https://www.luxatlas.lu/#b=2362&o=null&f=1071&ob=100&oo=100&of=50&x=662203&y=6360423&z=16.541415223113926). (CHECK WHEN I HAVE WIFI)
-
+Below is a walked tour around Belval, starting in the east next to the furnaces, going along the shopping center, then to the Park to the west and returning, ending in front of the University of LUxembourg's Maison des Sciences Humaines (MSH). 
+  
 Note that the walked path starts and ends in an urban area with tall structures, with some travel trough open green spaces in-between.
 
 ![Trace of a walk in Belval, Luxembourg](./images/BelvalWalk_trace.png)
 **Figure 1: Trace of walked path.**
 
-NEED A NORTH ARROW
+NEED A NORTH ARROW - REREND AND EXPORT DIRECTLY FROM QGIS
 
 The path in the figure above (green line) was manually digitized using QGIS according to the route taken.
 
 ## Sensed path - GNSS data
 
 GNSS devices decode satellite signals to determine their location.
-THe process locates, with some error, the device and the satellites at a point of time.
+The process locates, with some error, the device dependent on satellite distances at a specific time.
 This decoding process creates a diversity of data, such as device location (lat/long), location error, and elevation, among others.
 This data in raw form is called NMEA data after the organization that defined the standard, the National Marine Electronics Association. There are different versions of the standard.
 Rather than nicely structured data it can be quite messy or corrupted and needs further refinement before being easily usable.
@@ -68,46 +66,92 @@ $GPGSV,3,3,12,20,46,298,34,26,01,021,31,29,05,329,30,30,35,189,30*79
 $GLGSV,2,1,08,66,14,284,28,73,17,025,40,75,30,143,41,65,63,324,33*6F
 $GLGSV,2,2,08,88,30,251,37,81,29,314,27,72,46,073,35,87,06,209,*6A
 ```
-**Code snippet 1: Some NMEA data.**
-
-PERHAPS WE ONLY USE THE PORTION OF THE PATH THAT HAS BOTH DEVICES RECORDING?
+**Code snippet 1: Some NMEA data sentences.**
 
 We captured the NMEA sentences with an Android smartphone App called NMEA Tools Version 2.7.35.
-The NMEA data was processed and the lat/long points extracted using a python script (LINK).
+The NMEA data was [processed using a Python script to extract](processing/extract_nmea_data.py) the lat/long points and other data.
 In the figure below the lat/long points are added to the map of the walked path.
 
 Note that points can easily be mapped or graphed as lines as well as points.
-While using lines is beneficial in showing continuity or direction, lines can also obscure points that communicate information, such as the accuracy of data (a straight line can either mean a straight path or missing data) or changes in speed.
+While using lines is beneficial in showing continuity or direction, lines can also obscure points that communicate information, such as the accuracy of data (a straight line can either mean a straight path or missing data) or changes in speed (the difference in distance between points recorded at regular time intervals).
 
 The maps and figures will show point and line data as appropriate.
 
 ![Image of actual path and GNSS points](./images/BelvalWalk_trace with gps.png)
 **Figure 2: Overlay of GNSS sensed path over walked path.**
 
-NEED NORTH ARROW
+NEED A NORTH ARROW - REREND AND EXPORT DIRECTLY FROM QGIS
 
-In the figure above we see the GNSS device data following closely the taken path in the western area, but no the south-east.
+In the figure above we see the GNSS device data following closely the taken path in the western area, but less so in the south-eastern half.
 
-Temporally, we can see in the graph below that there is a lot of deviation from the taken path at the start and end of the walk.
+In the graph below we can see, temporally, that there is a lot of deviation from the taken path at the start and end of the walk.
 
 ```{r echo=FALSE, warning=FALSE}
-library("stringr")
 dferr <- read.table("./processing/trace_data/BelvalWT-snap-deviation.csv", sep = ",", header = T)
-dferr[c("h", "m", "s")] <- str_split_fixed(dferr$time, ":",3)
-dferr$ntime <- as.numeric(dferr$h) * 60 * 60 + as.numeric(dferr$m) * 60 + as.numeric(dferr$s )
-mint <- min(dferr$ntime)
-dferr$ntime <- dferr$ntime - mint
-dfs <- read.table("./processing/trace_data/BelvalWT-snap-height_stats0.csv", sep = ",", header = T)
-df <- merge(dferr, dfs[,c("rid", "X_count", "X_sum",  "X_mean", "X_median", "X_stdev", "X_min", "X_max")], by = "rid")
-plot(df$ntime/60, df$deviation, type = "n", xlab = "Time (minutes)", ylab = "Deviation from trace (m)")
+dferr$dt <- strptime(paste("2022-10-27", dferr$time), format="%Y-%m-%d %H:%M:%S", tz="UTC")
+
+# plot
+par(mar=c(4,4,1,4))
+plot(dferr$dt, dferr$deviation, type = "n", xlab = "Time", ylab = "Deviation from trace (m)")
 abline(h=1:3*10, col="grey")
-lines(df$ntime/60, df$deviation, lwd=2)
+lines(dferr$dt, dferr$deviation, lwd=2)
 ```
 **Figure 3: Plot of distance error between traced and sensed paths over time.**
 
-PERHAPS IT'S ALSO DUE TO SOMETHING ELSE? LET'S MAP SATELLITES COUNT.
+PERHAPS IT'S ALSO DUE TO SOMETHING ELSE?
+LET'S MAP SATELLITES COUNT.
+LET'S MAP THE MOVEMENT SPEED.
 
 ```{r satcount along route, echo=FALSE}
+
+ll <- read.csv2('processing/ll_data/20221027-Crosscall-nmea.csv', sep=',')
+as <- read.csv2('processing/as_data/20221027-Crosscall-nmea.csv', sep=',')
+
+ll$dt <- strptime(paste(ll$date, ll$time), format="%Y-%m-%d %H:%M:%S Z", tz="UTC")
+
+# merge both to get dt in as
+m <- merge(ll, as, by.x="rid", by.y="llid", all.x=TRUE)
+
+plot(m$dt, m$satused, cex=0.5, pch=19)
+# too fuzzy
+
+# smooth out the number of satellites used
+filter_size = 10
+m$satused_filt <- filter(m$satused, filter = rep(1/filter_size, filter_size))
+
+par(mar=c(4,4,1,4))
+plot(dferr$dt, dferr$deviation, type = "n", xlab = "Time", ylab = "Deviation from trace (m)")
+abline(h=1:3*10, col="grey")
+lines(dferr$dt, dferr$deviation, lwd=2)
+
+par(new=TRUE, mar=c(4,4,1,4))
+plot(m$dt, m$satused_filt, cex=0.5, xlab = "", ylab = "", xaxt='n', yaxt='n', col=3, type='l', lwd=2)
+axis(4, at=0:3*4, labels = 0:3*4)
+mtext(side=4, line = 2, "Number of satellite signals received (smoothed)", col=3)
+
+```
+It appears that the number of satellites signals received may decrease at times of higher error.
+
+```{r, echo=FALSE}
+mv <- read.csv2('processing/mv_data/20221027-Crosscall-nmea.csv', sep=',')
+mv$spd_ms <- as.numeric(mv$spd_ms)
+
+# merge both to get dt in mv
+m <- merge(ll, mv, by.x="rid", by.y="llid", all.x=TRUE)
+
+m$spd_kmh <- m$spd_ms*3.6
+filter_size = 20
+m$spd_filt <- filter(m$spd_kmh, filter = rep(1/filter_size, filter_size))
+
+par(mar=c(4,4,1,4))
+plot(dferr$dt, dferr$deviation, type = "n", xlab = "Time", ylab = "Deviation from trace (m)")
+abline(h=1:3*10, col="grey")
+lines(dferr$dt, dferr$deviation, lwd=2)
+
+par(new=TRUE, mar=c(4,4,1,4))
+plot(m$dt.x, m$spd_filt, cex=0.5, xlab = "", ylab = "", xaxt='n', yaxt='n', col=3, lwd=2, type='l')
+axis(4, at=0:10*.6, labels = 0:10*.6)
+mtext(side=4, line = 2, "Walking speed (km/h)", col=3)
 
 ```
 
@@ -121,12 +165,16 @@ We know that buildings interfere with GNSS precision. Let's visualize building h
 The mean height 50 m around the points is now overlayed in red with the deviation in meter.
 
 ```{r echo=FALSE, warning=FALSE}
+# buildings heights data
+dfs <- read.table("./processing/trace_data/BelvalWT-snap-height_stats0.csv", sep = ",", header = T)
+df <- merge(dferr, dfs[,c("rid", "X_count", "X_sum",  "X_mean", "X_median", "X_stdev", "X_min", "X_max")], by = "rid")
+
 par(mar=c(4,4,1,4))
-plot(df$ntime/60, df$deviation, type = "n", lwd=2, xlab = "Time (minutes)", ylab = "Deviation from trace (m)")
+plot(df$dt, df$deviation, type = "n", lwd=2, xlab = "Time (minutes)", ylab = "Deviation from trace (m)")
 abline(h=1:3*10, col="grey")
-lines(df$ntime/60, df$deviation, lwd=2)
-lines(df$ntime/60, df$X_mean, col="white", lwd=4)
-lines(df$ntime/60, df$X_mean, col=2, lwd=2)
+lines(df$dt, df$deviation, lwd=2)
+lines(df$dt, df$X_mean, col="white", lwd=4)
+lines(df$dt, df$X_mean, col=2, lwd=2)
 axis(4, at=0:3*10, labels = 0:3*10)
 mtext(side=4,line = 2, "Surrounding mean height within 50 metres (m)", col=2)
 legend('topleft', legend = c("Error distance", "Mean surrounding (50m) height of location"), lwd=2, col=c(1,2))
