@@ -41,7 +41,7 @@ Below is a walked tour around Belval, starting in the east next to the furnaces,
 
 Note that the walked path starts and ends in an urban area with tall structures, with some travel trough open green spaces in-between.
 
-![Trace of a walk in Belval, Luxembourg](./images/BelvalWalk_trace.svg)
+![Trace of a walk in Belval, Luxembourg](./images/BelvalWalk_trace.png)
 **Figure 1: Trace of walked path.**
 
 NEED A NORTH ARROW
@@ -58,8 +58,17 @@ Rather than nicely structured data it can be quite messy or corrupted and needs 
 Many devices and data analysis tools will process the NMEA data for you so that it is already comprehensible in data or visual form.
 
 ```
-
+$GPGSA,A,3,02,04,05,06,07,09,11,16,20,29,30,,1.0,0.6,0.8*3B
+$GPVTG,120.2,T,120.2,M,2.9,N,5.4,K,D*2C
+$GPRMC,113627,A,4930.382271,N,00556.308064,E,2.9,120.2,271022,1.1,W,D*0E
+$GPGGA,113627,4930.382271,N,00556.308064,E,2,11,0.6,312.0,M,48.0,M,,*47
+$GPGSV,3,1,12,02,09,327,35,04,19,071,34,05,10,303,34,06,36,210,33*7D
+$GPGSV,3,2,12,07,62,146,42,09,56,067,37,11,47,258,36,16,13,045,36*7A
+$GPGSV,3,3,12,20,46,298,34,26,01,021,31,29,05,329,30,30,35,189,30*79
+$GLGSV,2,1,08,66,14,284,28,73,17,025,40,75,30,143,41,65,63,324,33*6F
+$GLGSV,2,2,08,88,30,251,37,81,29,314,27,72,46,073,35,87,06,209,*6A
 ```
+**Code snippet 1: Some NMEA data.**
 
 PERHAPS WE ONLY USE THE PORTION OF THE PATH THAT HAS BOTH DEVICES RECORDING?
 
@@ -72,7 +81,7 @@ While using lines is beneficial in showing continuity or direction, lines can al
 
 The maps and figures will show point and line data as appropriate.
 
-![Image of actual path and GNSS points](./images/BelvalWalk_trace with gps.svg)
+![Image of actual path and GNSS points](./images/BelvalWalk_trace with gps.png)
 **Figure 2: Overlay of GNSS sensed path over walked path.**
 
 NEED NORTH ARROW
@@ -129,14 +138,24 @@ Study the graph above. Note how when the error, the distance between the know pa
 
 Clearly structures prevent the sensing device from capturing satellite signals.
 
+## The number of satellites
+
+As mentioned in the introduction, GPS, is the brand of the American GNSS system. Other systems exists such as GLONASS (Russia), Baedou (China), and Galileo (EU). As location accuracy is dependent on getting good satellite reception, clearly having more satellites accessible can be beneficial. Some GNSS devices can track multiple satellites types.
+
+![Visibility of satellites without GLONASS](images/20221027-Crosscall-nmea_no_glonass_satpaths.png){width=45%}
+![Visibility of satellites with GLONASS](images/20221027-Crosscall-nmea_satpaths.png){width=45%}
+
+**Figure X: Sky plots of satellites in view while completing walk, with only GPS satellites and with GPS and GLONASS satellites.**
+
 ## HDOP metric vs sat count vs ground-truthed error
 
+See also VDOP, and PDOP.
 
 ## Comparison of errors (?) and wrap up
 
 Other sources of errors: weather, ..
 
-## NOtes
+## Notes
 
 - While we used a smartphone app to record NMEA data, this may not the same as using smartphone location data, such as that positioned in Gooble Maps, which may use other measures such as proximity to cellular towers or Wi-Fi hotspots to georeference location.
 

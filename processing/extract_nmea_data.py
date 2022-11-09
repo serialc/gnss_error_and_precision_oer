@@ -9,6 +9,13 @@ lldp = 'll_data/'
 mvdp = 'mv_data/'
 asdp = 'as_data/'
 tgdp = 'tg_data/'
+gldp = 'gl_data/'
+
+# make directories if they don't exist
+for dp in [svdp, lldp, mvdp, asdp, tgdp, gldp]:
+    if not os.path.isdir(dp):
+        os.mkdir(dp)
+
 
 # delimiter: csv, tsv, etc...
 dlm = ','
@@ -25,20 +32,23 @@ for fp in sys.argv[1:]:
     fn = os.path.basename(fp)
 
     # save data to two files - latlng and satviews
-    fll = open(lldp + fn.split('.')[0] + '_latlng.csv', 'w')
-    fll.write('rid,time,lat,lng\n')
+    fll = open(lldp + fn.split('.')[0] + '.csv', 'w')
+    fll.write('rid,date,time,lat,lng\n')
 
-    fsv = open(svdp + fn.split('.')[0] + '_sv.csv', 'w')
+    fsv = open(svdp + fn.split('.')[0] + '.csv', 'w')
     fsv.write('rid,llid,time,satnum,elev,azim,SNR\n')
 
-    fmv = open(mvdp + fn.split('.')[0] + '_mv.csv', 'w')
+    fmv = open(mvdp + fn.split('.')[0] + '.csv', 'w')
     fmv.write('rid,llid,dt,warning,lat,lng,spd_knots,bearing,mag_var\n')
 
-    fas = open(asdp + fn.split('.')[0] + '_as.csv', 'w')
+    fas = open(asdp + fn.split('.')[0] + '.csv', 'w')
     fas.write('rid,llid,mode,fix,satused,pdop,hdop,vdop' + ','.join(['s' + str(s) for s in range(1,13)]) + '\n')
 
-    ftg = open(tgdp + fn.split('.')[0] + '_tg.csv', 'w')
+    ftg = open(tgdp + fn.split('.')[0] + '.csv', 'w')
     ftg.write('rid,llid,true_bear,magn_bear,spd_knots,spd_kmh\n')
+
+    fgl = open(gldp + fn.split('.')[0] + '.csv', 'w')
+    fgl.write('rid,llid,time,satnum,elev,azim,SS\n')
 
     # open file for reading
     with open(nmeadp + fn, 'r') as fr:
@@ -49,8 +59,10 @@ for fp in sys.argv[1:]:
         mv_rcount = 0
         as_rcount = 0
         tg_rcount = 0
+        gl_rcount = 0
 
         ll_time = ''
+        mv_date = ''
 
         checksum_fails = 0
         lines = 0
@@ -121,7 +133,7 @@ for fp in sys.argv[1:]:
                 if p[5] == 'W':
                     lng = -lng
 
-                fll.write(str(ll_rcount) + dlm + ll_time + dlm + str(lat) + dlm + str(lng) + '\n')
+                fll.write(str(ll_rcount) + dlm + mv_date + dlm + ll_time + dlm + str(lat) + dlm + str(lng) + '\n')
 
                 ll_rcount += 1
 
@@ -133,7 +145,8 @@ for fp in sys.argv[1:]:
             ###########################################
             if p[0] == 'GPRMC':
                 mv_time = p[1][0:2] + ':' + p[1][2:4] + ':' + p[1][4:6] + ' Z'
-                dt = '20' + p[9][4:] + '-' + p[9][2:4] + '-' + p[9][0:2] + ' ' + mv_time
+                mv_date = '20' + p[9][4:] + '-' + p[9][2:4] + '-' + p[9][0:2]
+                dt = mv_date + ' ' + mv_time
 
                 warn = p[2]
 
@@ -206,8 +219,26 @@ for fp in sys.argv[1:]:
                 # end of GPVTG - error and sat count
                 continue
 
+            ###########################################
+            # $GLGSV - GNSS (GLONASS) Satellite views (locations)
+            ###########################################
             if p[0] == 'GLGSV':
                 # https://www.hemispheregnss.com/technical-resource-manual/Import_Folder/GLGSV_Message.htm
+                # this is the exact same as GPGSV
+
+                # can be of variable length, but in batches of 4
+                # eat our way through 4 at a time
+                peat = p[4:]
+                
+                # can be up to 4 SV per line - consume the first four parts
+                while len(peat) >= 4:
+                    # check each value
+                    # write to file
+                    fgl.write(str(gl_rcount) + dlm + str(ll_rcount) + dlm + ll_time + dlm + peat[0] + dlm + peat[1] + dlm + peat[2] + dlm + peat[3] + '\n')
+                    peat = peat[4:]
+                    gl_rcount += 1
+
+
                 # end of GLGSV - GLONASS satellites in view
                 continue
 

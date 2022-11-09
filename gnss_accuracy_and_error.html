@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sylvain Klein &amp; Cyrille Médard de Chardon" />
 
-<meta name="date" content="2022-11-08" />
+<meta name="date" content="2022-11-09" />
 
 <title>GNSS/GPS accuracy and error</title>
 
@@ -164,7 +164,7 @@ pre code {
 
 <h1 class="title toc-ignore">GNSS/GPS accuracy and error</h1>
 <h4 class="author">Sylvain Klein &amp; Cyrille Médard de Chardon</h4>
-<h4 class="date">2022-11-08</h4>
+<h4 class="date">2022-11-09</h4>
 
 </div>
 
@@ -180,13 +180,15 @@ accuracy &amp; error</a>
 id="toc-sensed-path---gnss-data">Sensed path - GNSS data</a></li>
 <li><a href="#what-causes-error" id="toc-what-causes-error">What causes
 error?</a></li>
+<li><a href="#the-number-of-satellites"
+id="toc-the-number-of-satellites">The number of satellites</a></li>
 <li><a href="#hdop-metric-vs-sat-count-vs-ground-truthed-error"
 id="toc-hdop-metric-vs-sat-count-vs-ground-truthed-error">HDOP metric vs
 sat count vs ground-truthed error</a></li>
 <li><a href="#comparison-of-errors-and-wrap-up"
 id="toc-comparison-of-errors-and-wrap-up">Comparison of errors (?) and
 wrap up</a></li>
-<li><a href="#notes" id="toc-notes">NOtes</a></li>
+<li><a href="#notes" id="toc-notes">Notes</a></li>
 </ul></li>
 </ul>
 </div>
@@ -240,8 +242,8 @@ precision:</p>
 <div id="outline" class="section level2">
 <h2>Outline</h2>
 <p>This resource will analyze the data collected along a walk through
-Belval, LUxembourg, while carrying a GNSS device (model XXXX).</p>
-<p>ADD TABLE OF CONTENTS</p>
+Belval, LUxembourg, while carrying a GNSS device (Crosscall Trekker-M1
+Core).</p>
 </div>
 <div id="actual-path" class="section level2">
 <h2>Actual path</h2>
@@ -254,7 +256,7 @@ href="https://www.luxatlas.lu/#b=2362&amp;o=null&amp;f=1071&amp;ob=100&amp;oo=10
 - not sure we need this</a>. (CHECK WHEN I HAVE WIFI)</p>
 <p>Note that the walked path starts and ends in an urban area with tall
 structures, with some travel trough open green spaces in-between.</p>
-<p><img src="images/BelvalWalk_trace.svg"
+<p><img src="images/BelvalWalk_trace.png"
 alt="Trace of a walk in Belval, Luxembourg" /> <strong>Figure 1: Trace
 of walked path.</strong></p>
 <p>NEED A NORTH ARROW</p>
@@ -267,17 +269,29 @@ using QGIS according to the route taken.</p>
 THe process locates, with some error, the device and the satellites at a
 point of time. This decoding process creates a diversity of data, such
 as device location (lat/long), location error, and elevation, among
-others. This data in raw form is called NMEA data. Rather than nicely
+others. This data in raw form is called NMEA data after the organization
+that defined the standard, the National Marine Electronics Association.
+There are different versions of the standard. Rather than nicely
 structured data it can be quite messy or corrupted and needs further
 refinement before being easily usable. Many devices and data analysis
 tools will process the NMEA data for you so that it is already
 comprehensible in data or visual form.</p>
+<pre><code>$GPGSA,A,3,02,04,05,06,07,09,11,16,20,29,30,,1.0,0.6,0.8*3B
+$GPVTG,120.2,T,120.2,M,2.9,N,5.4,K,D*2C
+$GPRMC,113627,A,4930.382271,N,00556.308064,E,2.9,120.2,271022,1.1,W,D*0E
+$GPGGA,113627,4930.382271,N,00556.308064,E,2,11,0.6,312.0,M,48.0,M,,*47
+$GPGSV,3,1,12,02,09,327,35,04,19,071,34,05,10,303,34,06,36,210,33*7D
+$GPGSV,3,2,12,07,62,146,42,09,56,067,37,11,47,258,36,16,13,045,36*7A
+$GPGSV,3,3,12,20,46,298,34,26,01,021,31,29,05,329,30,30,35,189,30*79
+$GLGSV,2,1,08,66,14,284,28,73,17,025,40,75,30,143,41,65,63,324,33*6F
+$GLGSV,2,2,08,88,30,251,37,81,29,314,27,72,46,073,35,87,06,209,*6A</code></pre>
+<p><strong>Code snippet 1: Some NMEA data.</strong></p>
 <p>PERHAPS WE ONLY USE THE PORTION OF THE PATH THAT HAS BOTH DEVICES
 RECORDING?</p>
-<p>We captured the NMEA sentences with a smartphone App called (NAME?).
-The NMEA data was processed and the lat/long points extracted using a
-python script (LINK). In the figure below the lat/long points are added
-to the map of the walked path.</p>
+<p>We captured the NMEA sentences with an Android smartphone App called
+NMEA Tools Version 2.7.35. The NMEA data was processed and the lat/long
+points extracted using a python script (LINK). In the figure below the
+lat/long points are added to the map of the walked path.</p>
 <p>Note that points can easily be mapped or graphed as lines as well as
 points. While using lines is beneficial in showing continuity or
 direction, lines can also obscure points that communicate information,
@@ -285,7 +299,7 @@ such as the accuracy of data (a straight line can either mean a straight
 path or missing data) or changes in speed.</p>
 <p>The maps and figures will show point and line data as
 appropriate.</p>
-<p><img src="images/BelvalWalk_trace%20with%20gps.svg"
+<p><img src="images/BelvalWalk_trace%20with%20gps.png"
 alt="Image of actual path and GNSS points" /> <strong>Figure 2: Overlay
 of GNSS sensed path over walked path.</strong></p>
 <p>NEED NORTH ARROW</p>
@@ -318,15 +332,33 @@ surrounding structure heights.</p>
 <p>Clearly structures prevent the sensing device from capturing
 satellite signals.</p>
 </div>
+<div id="the-number-of-satellites" class="section level2">
+<h2>The number of satellites</h2>
+<p>As mentioned in the introduction, GPS, is the brand of the American
+GNSS system. Other systems exists such as GLONASS (Russia), Baedou
+(China), and Galileo (EU). As location accuracy is dependent on getting
+good satellite reception, clearly having more satellites accessible can
+be beneficial. Some GNSS devices can track multiple satellites
+types.</p>
+<p><img src="images/20221027-Crosscall-nmea_no_glonass_satpaths.png"
+style="width:45.0%" alt="Visibility of satellites without GLONASS" />
+<img src="images/20221027-Crosscall-nmea_satpaths.png"
+style="width:45.0%" alt="Visibility of satellites with GLONASS" /></p>
+<p><strong>Figure X: Sky plots of satellites in view while completing
+walk, with only GPS satellites and with GPS and GLONASS
+satellites.</strong></p>
+</div>
 <div id="hdop-metric-vs-sat-count-vs-ground-truthed-error"
 class="section level2">
 <h2>HDOP metric vs sat count vs ground-truthed error</h2>
+<p>See also VDOP, and PDOP.</p>
 </div>
 <div id="comparison-of-errors-and-wrap-up" class="section level2">
 <h2>Comparison of errors (?) and wrap up</h2>
+<p>Other sources of errors: weather, ..</p>
 </div>
 <div id="notes" class="section level2">
-<h2>NOtes</h2>
+<h2>Notes</h2>
 <ul>
 <li>While we used a smartphone app to record NMEA data, this may not the
 same as using smartphone location data, such as that positioned in
