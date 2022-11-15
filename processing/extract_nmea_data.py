@@ -33,22 +33,19 @@ for fp in sys.argv[1:]:
 
     # save data to two files - latlng and satviews
     fll = open(lldp + fn.split('.')[0] + '.csv', 'w')
-    fll.write('rid,date,time,lat,lng\n')
+    fll.write('llid,date,time,lat,lng\n')
 
     fsv = open(svdp + fn.split('.')[0] + '.csv', 'w')
-    fsv.write('rid,llid,time,satnum,elev,azim,SNR\n')
+    fsv.write('svid,llid,satsys,satnum,elev,azim,SNR\n')
 
     fmv = open(mvdp + fn.split('.')[0] + '.csv', 'w')
-    fmv.write('rid,llid,dt,warning,lat,lng,spd_knots,spd_ms,bearing,mag_var\n')
+    fmv.write('mvid,llid,dt,warning,lat,lng,spd_knots,spd_ms,bearing,mag_var\n')
 
     fas = open(asdp + fn.split('.')[0] + '.csv', 'w')
-    fas.write('rid,llid,mode,fix,satused,pdop,hdop,vdop,' + ','.join(['s' + str(s) for s in range(1,13)]) + '\n')
+    fas.write('asid,llid,mode,fix,satused,pdop,hdop,vdop,' + ','.join(['s' + str(s) for s in range(1,13)]) + '\n')
 
     ftg = open(tgdp + fn.split('.')[0] + '.csv', 'w')
-    ftg.write('rid,llid,true_bear,magn_bear,spd_knots,spd_kmh\n')
-
-    fgl = open(gldp + fn.split('.')[0] + '.csv', 'w')
-    fgl.write('rid,llid,time,satnum,elev,azim,SS\n')
+    ftg.write('tgid,llid,true_bear,magn_bear,spd_knots,spd_kmh\n')
 
     # open file for reading
     with open(nmeadp + fn, 'r') as fr:
@@ -95,8 +92,17 @@ for fp in sys.argv[1:]:
 
             ###########################################
             # $GPGSV - GNSS Satellite views (locations)
+            # $GLGSV - GNSS (GLONASS) Satellite views (locations)
             ###########################################
-            if p[0] == 'GPGSV':
+            if p[0] == 'GPGSV' or p[0] == 'GLGSV':
+
+                satsys = "ERR"
+                if p[0] == 'GPGSV':
+                    satsys = "GPS"
+                elif p[0] == 'GLGSV':
+                    satsys = "GLN"
+ 
+                # https://www.hemispheregnss.com/technical-resource-manual/Import_Folder/GLGSV_Message.htm
 
                 # can be of variable length, but in batches of 4
                 # eat our way through 4 at a time
@@ -106,7 +112,8 @@ for fp in sys.argv[1:]:
                 while len(peat) >= 4:
                     # check each value
                     # write to file
-                    fsv.write(str(sv_rcount) + dlm + str(ll_rcount) + dlm + ll_time + dlm + peat[0] + dlm + peat[1] + dlm + peat[2] + dlm + peat[3] + '\n')
+                    # svid,llid,satsys,satnum,elev,azim,SNR
+                    fsv.write(str(sv_rcount) + dlm + str(ll_rcount) + dlm + satsys + dlm + peat[0] + dlm + peat[1] + dlm + peat[2] + dlm + peat[3] + '\n')
                     peat = peat[4:]
                     sv_rcount += 1
 
@@ -133,6 +140,7 @@ for fp in sys.argv[1:]:
                 if p[5] == 'W':
                     lng = -lng
 
+                # llid,date,time,lat,lng
                 fll.write(str(ll_rcount) + dlm + mv_date + dlm + ll_time + dlm + str(lat) + dlm + str(lng) + '\n')
 
                 ll_rcount += 1
@@ -175,7 +183,7 @@ for fp in sys.argv[1:]:
                 if p[11] == 'W':
                     magvar = '-' + magvar
 
-                # rid,llid,dt,warning,lat,lng,spd_knots,spd_ms,bearing,mag_var
+                # mvid,llid,dt,warning,lat,lng,spd_knots,spd_ms,bearing,mag_var
                 fmv.write(str(mv_rcount) + dlm + str(ll_rcount) + dlm + dt + dlm + warn + dlm + str(lat) + dlm + str(lng) + dlm + p[7] + dlm + str(spd_ms) + dlm + bearing + dlm + str(magvar) + "\n")
 
                 mv_rcount += 1
@@ -198,7 +206,7 @@ for fp in sys.argv[1:]:
                 hdop = p[16]
                 vdop = p[17]
 
-                # rid,llid,mode,fix,satused,pdop,hdop,vdop
+                # asid,llid,mode,fix,satused,pdop,hdop,vdop
                 fas.write(str(as_rcount) + dlm + str(ll_rcount) + dlm + mode + dlm + fix + dlm + str(satused) + dlm + pdop + dlm + hdop + dlm + vdop + dlm + ",".join(sats) + "\n")
 
                 as_rcount += 1
@@ -211,35 +219,12 @@ for fp in sys.argv[1:]:
             ###########################################
             if p[0] == 'GPVTG':
 
-                # rid,llid,true_bear,magn_bear,spd_knots,spd_kmh
+                # tgid,llid,true_bear,magn_bear,spd_knots,spd_kmh
                 ftg.write(str(tg_rcount) + dlm + str(ll_rcount) + dlm + p[1] + dlm + p[3] + dlm + p[5] + dlm + p[7] + "\n")
 
                 tg_rcount += 1
 
                 # end of GPVTG - error and sat count
-                continue
-
-            ###########################################
-            # $GLGSV - GNSS (GLONASS) Satellite views (locations)
-            ###########################################
-            if p[0] == 'GLGSV':
-                # https://www.hemispheregnss.com/technical-resource-manual/Import_Folder/GLGSV_Message.htm
-                # this is the exact same as GPGSV
-
-                # can be of variable length, but in batches of 4
-                # eat our way through 4 at a time
-                peat = p[4:]
-                
-                # can be up to 4 SV per line - consume the first four parts
-                while len(peat) >= 4:
-                    # check each value
-                    # write to file
-                    fgl.write(str(gl_rcount) + dlm + str(ll_rcount) + dlm + ll_time + dlm + peat[0] + dlm + peat[1] + dlm + peat[2] + dlm + peat[3] + '\n')
-                    peat = peat[4:]
-                    gl_rcount += 1
-
-
-                # end of GLGSV - GLONASS satellites in view
                 continue
 
             print("NMEA line not processed: " + line)
@@ -254,4 +239,3 @@ for fp in sys.argv[1:]:
     fmv.close()
     fas.close()
     ftg.close()
-    fgl.close()

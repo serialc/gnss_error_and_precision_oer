@@ -1,4 +1,4 @@
-rid,llid,time,satnum,elev,azim,SS
+rid,llid,time,satnum,elev,azim,SNR
 0,0,,70,28,050,
 1,0,,86,57,188,
 2,0,,73,00,000,
