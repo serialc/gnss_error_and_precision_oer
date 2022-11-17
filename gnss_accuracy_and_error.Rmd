@@ -26,20 +26,23 @@ A brief reminder of the difference between **accuracy** and **precision**:
 
 | Value | Measurement | Definition |
 |---|---|---|
-|2.017|2.8325|Precise but not accurate|
-|2.017|2|Accurate but not precise|
-|2.017|2.017|Accurate and precise|
-Note that it is better to be accurate than precise.
+|2.4173|2.9325|Precise but not accurate|
+|2.4173|2.4|Accurate but not precise|
+|2.4173|2.417|Accurate and precise|
+
+Admittedly some confusion and convergence between the two terms' meanings can occur when precision decreases for an accurate measurement (e.g., the value 2.4173 reported as 2).
+
+See an [alternative example](https://xkcd.com/2300/).
 
 ## Outline
-This resource will analyze the accuracy and error of location data collected along a walk through Belval, LUxembourg, using a GNSS device (Crosscall Trekker-M1 Core).
+This resource will analyze through exploration the accuracy and error of location data collected along a walk through Belval, LUxembourg, using a GNSS device (Crosscall Trekker-M1 Core).
 
 ## Actual path
-Below is a walked tour around Belval, starting in the east next to the furnaces, going along the shopping center, then to the Park to the west and returning, ending in front of the University of LUxembourg's Maison des Sciences Humaines (MSH). 
-  
+Below is a walked tour through and in the vicinity of Belval, starting in the east next to the furnaces, going along the shopping center, then to the Park to the west and returning, ending in front of the University of LUxembourg's Maison des Sciences Humaines.
+
 Note that the walked path starts and ends in an urban area with tall structures, with some travel trough open green spaces in-between.
 
-![Trace of a walk in Belval, Luxembourg](./images/BelvalWalk_trace.png)
+![Trace of a walk in Belval, Luxembourg](./maps/BelvalWalk_trace.png)
 **Figure 1: Trace of walked path.**
 
 NEED A NORTH ARROW - REREND AND EXPORT DIRECTLY FROM QGIS
@@ -49,10 +52,10 @@ The path in the figure above (green line) was manually digitized using QGIS acco
 ## Sensed path - GNSS data
 
 GNSS devices decode satellite signals to determine their location.
-The process locates, with some error, the device dependent on satellite distances at a specific time.
-This decoding process creates a diversity of data, such as device location (lat/long), location error, and elevation, among others.
-This data in raw form is called NMEA data after the organization that defined the standard, the National Marine Electronics Association. There are different versions of the standard.
-Rather than nicely structured data it can be quite messy or corrupted and needs further refinement before being easily usable.
+The process locates, with some error, the device's location by determining satellite distances (called trilateration).
+This decoding process creates a diversity of data, such as device location (lat/long), elevation, and various error measures, among others.
+This data in its raw form is called NMEA data after the organization that defined the standard, the National Marine Electronics Association. There are different versions of the standard.
+Rather than nicely structured, NMEA data can be quite messy or corrupted and needs further refinement before being easily usable.
 Many devices and data analysis tools will process the NMEA data for you so that it is already comprehensible in data or visual form.
 
 ```
@@ -66,6 +69,7 @@ $GPGSV,3,3,12,20,46,298,34,26,01,021,31,29,05,329,30,30,35,189,30*79
 $GLGSV,2,1,08,66,14,284,28,73,17,025,40,75,30,143,41,65,63,324,33*6F
 $GLGSV,2,2,08,88,30,251,37,81,29,314,27,72,46,073,35,87,06,209,*6A
 ```
+
 **Code snippet 1: Some NMEA data sentences.**
 
 We captured the NMEA sentences with an Android smartphone App called NMEA Tools Version 2.7.35.
@@ -77,14 +81,14 @@ While using lines is beneficial in showing continuity or direction, lines can al
 
 The maps and figures will show point and line data as appropriate.
 
-![Image of actual path and GNSS points](./images/BelvalWalk_trace with gps.png)
+![Image of actual path and GNSS points](./maps/BelvalWalk_trace with gps.png)
 **Figure 2: Overlay of GNSS sensed path over walked path.**
 
 NEED A NORTH ARROW - REREND AND EXPORT DIRECTLY FROM QGIS
 
-In the figure above we see the GNSS device data following closely the taken path in the western area, but less so in the south-eastern half.
+In the figure above we see the GNSS device data following closely the taken path in the western area, but less so in the south-eastern half where more buildings are present.
 
-In the graph below we can see, temporally, that there is a lot of deviation from the taken path at the start and end of the walk.
+Temporally, in the graph below, we can see that there is a lot of deviation from the taken path at the start and end of the walk.
 
 ```{r echo=FALSE, warning=FALSE}
 dferr <- read.table("./processing/trace_data/BelvalWT-snap-deviation.csv", sep = ",", header = T)
@@ -96,11 +100,12 @@ plot(dferr$dt, dferr$deviation, type = "n", xlab = "Time", ylab = "Deviation fro
 abline(h=1:3*10, col="grey")
 lines(dferr$dt, dferr$deviation, lwd=2)
 ```
+
 **Figure 3: Plot of distance error between traced and sensed paths over time.**
 
-PERHAPS IT'S ALSO DUE TO SOMETHING ELSE?
-LET'S MAP SATELLITES COUNT.
-LET'S MAP THE MOVEMENT SPEED.
+## What causes error?
+
+Since GNSS accuracy depends on receiving satellite signals, interference between these and the sensor will increase error. Buildings are a common cause of location error, but forests and topography can also degrade, reflect, or block satellite signals.
 
 ```{r satcount along route, echo=FALSE}
 
@@ -110,9 +115,9 @@ as <- read.csv2('processing/as_data/20221027-Crosscall-nmea.csv', sep=',')
 ll$dt <- strptime(paste(ll$date, ll$time), format="%Y-%m-%d %H:%M:%S Z", tz="UTC")
 
 # merge both to get dt in as
-m <- merge(ll, as, by.x="rid", by.y="llid", all.x=TRUE)
+m <- merge(ll, as, by="llid", all.x=TRUE)
 
-plot(m$dt, m$satused, cex=0.5, pch=19)
+#plot(m$dt, m$satused, cex=0.5, pch=19)
 # too fuzzy
 
 # smooth out the number of satellites used
@@ -125,19 +130,23 @@ abline(h=1:3*10, col="grey")
 lines(dferr$dt, dferr$deviation, lwd=2)
 
 par(new=TRUE, mar=c(4,4,1,4))
-plot(m$dt, m$satused_filt, cex=0.5, xlab = "", ylab = "", xaxt='n', yaxt='n', col=3, type='l', lwd=2)
-axis(4, at=0:3*4, labels = 0:3*4)
-mtext(side=4, line = 2, "Number of satellite signals received (smoothed)", col=3)
+plot(m$dt, m$satused_filt, xlab = "", ylab = "", xaxt='n', yaxt='n', col="white", lwd=4, type='l')
+lines(m$dt, m$satused_filt, col=4, lwd=2, type='l')
+axis(4, at=0:3*4, labels = 0:3*4, col.axis=4)
+mtext(side=4, line = 2, "Number of satellite signals received (smoothed)", col=4)
 
 ```
-It appears that the number of satellites signals received may decrease at times of higher error.
+
+**Figure 4: The error and number of satellites used to locate the sensor.**
+
+It appears that the number of satellites signals received decreases at times of higher error.
 
 ```{r, echo=FALSE}
 mv <- read.csv2('processing/mv_data/20221027-Crosscall-nmea.csv', sep=',')
 mv$spd_ms <- as.numeric(mv$spd_ms)
 
 # merge both to get dt in mv
-m <- merge(ll, mv, by.x="rid", by.y="llid", all.x=TRUE)
+m <- merge(ll, mv, by="llid", all.x=TRUE)
 
 m$spd_kmh <- m$spd_ms*3.6
 filter_size = 20
@@ -149,20 +158,19 @@ abline(h=1:3*10, col="grey")
 lines(dferr$dt, dferr$deviation, lwd=2)
 
 par(new=TRUE, mar=c(4,4,1,4))
-plot(m$dt.x, m$spd_filt, cex=0.5, xlab = "", ylab = "", xaxt='n', yaxt='n', col=3, lwd=2, type='l')
-axis(4, at=0:10*.6, labels = 0:10*.6)
+plot(m$dt.x, m$spd_filt, xlab = "", ylab = "", xaxt='n', yaxt='n', col="white", lwd=4, type='l')
+lines(m$dt.x, m$spd_filt, col=3, lwd=2, type='l')
+axis(4, at=0:10*.6, labels = 0:10*.6, col.axis = 3)
 mtext(side=4, line = 2, "Walking speed (km/h)", col=3)
-
 ```
 
-## What causes error?
-
-We know that buildings interfere with GNSS precision. Let's visualize building heights along the walked route.
+As buildings interfere with GNSS precision let's visualize building heights along the walked route.
 
 (ADD AN IFRAME TO CONTAIN THIS and then a link to the full page visualization)
 [see GPS path and 3D buildings](https://map.geoportail.lu/theme/main?bgLayer=basemap_2015_global&version=3&zoom=14&X=661470&Y=6361338&lang=en&rotation=0&layers=&opacities=&crosshair=false&3d_layers=ACT2022_BD_L_BATI3D_LOD2%2CVDL2022_LOD2_IMPORT_old%2CBridges_LOD2%2CACT2019_LiDAR_Bridges_LOD1%2CACT2019_LiDAR_Vegetation&3d_enabled=true&3d_lon=5.94209&3d_lat=49.49240&3d_elevation=1385&3d_heading=360.000&3d_pitch=-40.388&map_id=3a4b6e155fce4f448337ebe41ed6c005&embedded=true)
 
-The mean height 50 m around the points is now overlayed in red with the deviation in meter.
+We can view this similarly to earlier graphs as well.
+Below, the mean height of the 50m around each recorded location is overlaid on the error.
 
 ```{r echo=FALSE, warning=FALSE}
 # buildings heights data
@@ -175,16 +183,16 @@ abline(h=1:3*10, col="grey")
 lines(df$dt, df$deviation, lwd=2)
 lines(df$dt, df$X_mean, col="white", lwd=4)
 lines(df$dt, df$X_mean, col=2, lwd=2)
-axis(4, at=0:3*10, labels = 0:3*10)
+axis(4, at=0:3*10, labels = 0:3*10, col.axis=2)
 mtext(side=4,line = 2, "Surrounding mean height within 50 metres (m)", col=2)
 legend('topleft', legend = c("Error distance", "Mean surrounding (50m) height of location"), lwd=2, col=c(1,2))
 
 ```
 **Figure 4: Plot of surrounding building heights and error along the walked path.**
 
-Study the graph above. Note how when the error, the distance between the know path and the sensed path, increases according to the surrounding structure heights.
+Clearly the distance between the know path and the sensed path, increases according to the surrounding structure heights.
 
-Clearly structures prevent the sensing device from capturing satellite signals.
+As expected surrounding structures reduce the GNSS sensing device accuracy.
 
 ## The number of satellites
 
@@ -194,6 +202,13 @@ As mentioned in the introduction, GPS, is the brand of the American GNSS system.
 ![Visibility of satellites with GLONASS](images/20221027-Crosscall-nmea_satpaths.png){width=45%}
 
 **Figure X: Sky plots of satellites in view while completing walk, with only GPS satellites and with GPS and GLONASS satellites.**
+
+## Dynamic satellite selection
+
+While many satellites may be detected by a GNSS device, only up to 12 are used to calculate the location. Depending on reception to satellites as the device and the satellites move, the selection used changes over time.
+
+![Dynamic GNSS selection over time](images/sat_anim.gif)
+**Figure X1: The movement and selection of satellites used during the Belval walk. The perspective**
 
 ## HDOP metric vs sat count vs ground-truthed error
 

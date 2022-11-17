@@ -1,12 +1,8 @@
-# loading used libraries
-library(gifski)
-
 # load the function that makes the sat plots
 source('functions.R')
 
 animateSats('20221027-Crosscall-nmea.csv')
 animateSats('berlin.csv')
-
 
 ##### Try adding the plots over a basemap ####
 
