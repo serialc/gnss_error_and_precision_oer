@@ -51,10 +51,16 @@ The path in the figure above (green line) was manually digitized using QGIS acco
 
 ## The sensed path - GNSS data
 
-GNSS devices decode satellite signals to determine their location.
-The process locates, with some error, the device's location by determining satellite distances (called trilateration).
+GNSS devices decode satellite signals to determine their location. The signals contain three data parts:
+
+- A unique identifier (the spacecraft vehicle number - SVN)
+- The time the signal was sent
+- The implicit location of the satellite (the orbit/ephemeris and location on it - sort of)
+
+The decoding process locates, with some error, the device's location relative to the Earth's sea-level altitude by determining the satellites distances (a process called trilateration).
 This decoding process creates a diversity of data, such as device location (lat/long), elevation, and various error measures, among others.
-This data in its raw form is called NMEA data after the organization that defined the standard, the National Marine Electronics Association. There are different versions of the standard.
+
+This generated data, in its raw form, is called NMEA data after the organization that defined the standard, the National Marine Electronics Association. There are different versions of the standard.
 Rather than nicely structured, NMEA data can be quite messy or corrupted and needs further refinement before being easily usable.
 Many devices and data analysis tools will process the NMEA data for you so that it is already comprehensible in data or visual form.
 
@@ -73,7 +79,7 @@ $GLGSV,2,2,08,88,30,251,37,81,29,314,27,72,46,073,35,87,06,209,*6A
 **Code snippet 1: Some NMEA data sentences.**
 
 We captured the NMEA sentences with an Android smartphone App called NMEA Tools Version 2.7.35.
-The NMEA data was [processed using a Python script to extract](processing/extract_nmea_data.py) the lat/long points and other data.
+The NMEA data was [processed using a Python script to extract](processing/extract_nmea_data.py) the lat/long points and other data. Depending on your device multiple GNSS constellations may be captured.
 
 Besides lat/long data, NMEA data also contains:
 - Relative angles of GNSS satellites visible/detected
@@ -83,8 +89,8 @@ Besides lat/long data, NMEA data also contains:
 
 In the figure below the lat/long points are added to the map of the walked path.
 
-Note that points can easily be mapped or graphed as lines as well as points.
-While using lines is beneficial in showing continuity or direction, lines can also obscure points that communicate information, such as the accuracy of data (a straight line can either mean a straight path or missing data) or changes in speed (the difference in distance between points recorded at regular time intervals).
+Note that point data can as easily be mapped or graphed as lines as well as points.
+While using lines is beneficial in showing continuity, sequence, or direction, lines can also obscure points that communicate information, such as the accuracy of data (a straight line can either mean a straight path or missing data) or changes in speed (the difference in distance between points recorded at regular time intervals).
 
 The maps and figures will show point and line data as appropriate.
 
@@ -112,7 +118,7 @@ lines(dferr$dt, dferr$deviation, lwd=2)
 
 ## What causes error?
 
-Since GNSS accuracy depends on receiving satellite signals, interference between these and the sensor will increase error. Buildings are a common cause of location error, but forests and topography can also degrade, reflect, or block satellite signals.
+Since GNSS accuracy depends on receiving satellite signals, interference between these and the sensor will increase error. Buildings are a common cause of location error, but weather, forests, and topography can also degrade, reflect, or block satellite signals.
 
 ```{r satcount along route, echo=FALSE}
 
@@ -212,18 +218,62 @@ As mentioned in the introduction, GPS, is the brand of the American GNSS system.
 
 ## Dynamic satellite selection
 
-While many satellites may be detected by a GNSS device, only up to 12 are used to calculate the location. Depending on reception to satellites as the device and the satellites move, the selection used changes over time.
+While many satellites may be detected by a GNSS device, only up to 12 are used to calculate location. Depending on satellite reception as the device and the satellites move, the selection used changes over time.
 
 ![Dynamic GNSS selection over time](images/sat_anim.gif)
 
 **Figure X1: The movement and selection of satellites used during the Belval walk. The perspective**
 
 ```{r GLNvsGPS lock comparison, echo=FALSE}
-head(m)
+
+# we want the satellites, individually
+sv <- read.csv2('processing/sv_data/20221027-Crosscall-nmea.csv', sep=',')
+msv <- merge(ll, sv, by="llid", all.x=TRUE)
+
+# m has the the data of with which satellites we've locked on to
+# create an index of SVN and 
+sats <- lapply(split(sv, sv$satnum), function(x) { x$satsys[1]})
+sats$svn <- rownames(sats)
+
+# extract just the count of the satellite types at different locks
+satdist <- data.frame(do.call('rbind', lapply(split(msv$satsys, msv$llid), function(x) {
+  #x <- split(msv$satsys, msv$llid)[[1]]
+  n = length(x)
+  gps = sum(x == 'GPS')
+  gln = n - gps
+  c(gps, gln, n)
+})))
+
+colnames(satdist) <- c('gps', 'gln', 'n')
+
+# only keep good rows
+satdist <- satdist[satdist$n < 30,]
+
+# display which count of each satellite system/constellation is visible
+plot(jitter(satdist$gps), jitter(satdist$gln), pch=19, cex=0.5, xlim=c(5,14), ylim=c(5,14), xlab="GPS satellites visible", ylab="GLONASS satellites visible")
+# we see more GPS than GLONASS generally
+
+# let's see which satellite types are used for locks
+satused_list <- lapply(split(m, m$llid), function(x) {
+  # get the last row and just the locked sats
+  lr <- x[nrow(x), paste0('s', 1:12)]
+  tmp <- data.frame(satsys=c('GLN', 'GPS'))
+  # convert svn to satsys
+  d <- data.frame(table(unlist(sapply(lr, function(s) {
+    sats[[s]]
+  }))))
+  satheaded <- unlist(merge(tmp, d, by.x="satsys", by.y="Var1")[,2,drop=FALSE], recursive = TRUE)
+})
+satused <- data.frame(do.call('rbind', satused_list))
+colnames(satused) <- c('GLN', 'GPS')
+
+par(new=TRUE)
+plot(filter(satused$GLN, filter=rep(1/20,20)), type='l', ylim=c(0,10))
+lines(filter(satused$GPS, filter=rep(1/20,20)))
 
 ```
 
-## HDOP metric vs sat count vs ground-truthed error
+## DOP measures
 
 See also VDOP, and PDOP.
 
