@@ -224,6 +224,8 @@ While many satellites may be detected by a GNSS device, only up to 12 are used t
 
 **Figure X1: The movement and selection of satellites used during the Belval walk. The perspective**
 
+ADD video of map view (follow leaflet app) with this overlaid in the corner
+
 ```{r GLNvsGPS lock comparison, echo=FALSE}
 
 # we want the satellites, individually
@@ -254,7 +256,9 @@ plot(jitter(satdist$gps), jitter(satdist$gln), pch=19, cex=0.5, xlim=c(5,14), yl
 # we see more GPS than GLONASS generally
 
 # let's see which satellite types are used for locks
-satused_list <- lapply(split(m, m$llid), function(x) {
+satused_list <- lapply(split(as, as$llid), function(x) {
+  #x <- split(as, as$llid)[[1]]
+  
   # get the last row and just the locked sats
   lr <- x[nrow(x), paste0('s', 1:12)]
   tmp <- data.frame(satsys=c('GLN', 'GPS'))
@@ -267,11 +271,21 @@ satused_list <- lapply(split(m, m$llid), function(x) {
 satused <- data.frame(do.call('rbind', satused_list))
 colnames(satused) <- c('GLN', 'GPS')
 
+par(mar=c(4,4,1,4))
+plot(df$dt, df$deviation, col="white", type='n', yaxt='n', xlab='', ylab='')
+abline(h=1:3*10, col="grey")
+lines(df$dt, df$deviation, lwd=2, col=3)
+axis(4, at=0:3*10, labels = 0:3*10, col.axis=3)
+mtext(side=4,line = 2, "Deviation from trace (m)", col=3)
 par(new=TRUE)
-plot(filter(satused$GLN, filter=rep(1/20,20)), type='l', ylim=c(0,10))
+plot(filter(satused$GLN, filter=rep(1/20,20)), type='l', ylim=c(0,10), ylab="Number of satellites used for lock", xaxt='n', lwd=4, col='white')
+lines(filter(satused$GLN, filter=rep(1/20,20)), col='black')
+lines(filter(satused$GPS, filter=rep(1/20,20)), col='white', lwd=4)
 lines(filter(satused$GPS, filter=rep(1/20,20)))
 
 ```
+
+This is very messy. Not much to conclude from this.
 
 ## DOP measures
 
@@ -284,7 +298,5 @@ Other sources of errors: weather, ..
 ## Notes
 
 - While we used a smartphone app to record NMEA data, this may not the same as using smartphone location data, such as that positioned in Gooble Maps, which may use other measures such as proximity to cellular towers or Wi-Fi hotspots to georeference location.
-
-
 
 
