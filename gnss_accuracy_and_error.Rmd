@@ -54,8 +54,6 @@ Requirements for needed accuracy and availability of the above determine whether
 ![Trace of a walk in Belval, Luxembourg](./maps/BelvalWalk_trace.png)
 **Figure 1: Trace of walked path.**
 
-NEED A NORTH ARROW - REREND AND EXPORT DIRECTLY FROM QGIS
-
 The path in the figure above (green line) was manually digitized using QGIS according to the route taken.
 
 ## The sensed path - GNSS data
@@ -105,8 +103,6 @@ The maps and figures will show point and line data as appropriate.
 
 ![Image of actual path and GNSS points](./maps/BelvalWalk_trace with gps.png)
 **Figure 2: Overlay of GNSS sensed path over walked path.**
-
-NEED A NORTH ARROW - REREND AND EXPORT DIRECTLY FROM QGIS
 
 In the figure above we see the GNSS device data following closely the taken path in the western area, but less so in the south-eastern half where more buildings are present.
 
@@ -196,7 +192,7 @@ Below, the mean height of the 50m around each recorded location is overlaid on t
 
 ```{r echo=FALSE, warning=FALSE}
 # buildings heights data
-dfs <- read.table("./gis/trace_data/BelvalWT-snap-height_stats0.csv", sep = ",", header = T)
+dfs <- read.table("./gis/trace_data/BelvalWT-snap-height_stats.csv", sep = ",", header = T)
 df <- merge(dferr, dfs[,c("rid", "X_count", "X_sum",  "X_mean", "X_median", "X_stdev", "X_min", "X_max")], by = "rid")
 
 par(mar=c(4,4,1,4))
@@ -210,7 +206,7 @@ mtext(side=4,line = 2, "Surrounding mean height within 50 metres (m)", col=2)
 legend('topleft', legend = c("Error distance", "Mean height of surrounding (50m) location"), lwd=2, col=c(1,2))
 
 ```
-**Figure 4: Plot of surrounding building heights and error along the walked path.**
+**Figure 5: Plot of surrounding building heights and error along the walked path.**
 
 Clearly the distance between the known path and the sensed path, increases according to the surrounding structure heights.
 
@@ -223,7 +219,7 @@ As mentioned in the introduction, GPS, is the brand of the American GNSS system.
 ![Visibile GLONASS satellites](images/20221027-Crosscall-nmea_satpaths_INV_GLN.png){width=45%}
 ![Visibile GPS satellites](images/20221027-Crosscall-nmea_satpaths_INV_GPS.png){width=45%}
 
-**Figure X: Sky plots of GLONASS (left) and GPS (right) satellites in view while completing walk.**
+**Figure 6: Sky plots of GLONASS (left) and GPS (right) satellites in view while completing walk.**
 
 ## Dynamic satellite selection
 
@@ -231,7 +227,7 @@ While many satellites may be detected by a GNSS device, only up to 12 are used t
 
 ![Dynamic GNSS selection over time](images/sat_anim.gif)
 
-**Figure X1: The movement and selection of satellites used during the Belval walk. The perspective**
+**Figure 7: The movement and selection of satellites used during the Belval walk. The perspective**
 
 ADD video of map view (follow leaflet app) with this overlaid in the corner
 
@@ -261,7 +257,7 @@ colnames(satdist) <- c('gps', 'gln', 'n')
 satdist <- satdist[satdist$n < 30,]
 
 # display which count of each satellite system/constellation is visible
-plot(jitter(satdist$gps), jitter(satdist$gln), pch=19, cex=0.5, xlim=c(5,14), ylim=c(5,14), xlab="GPS satellites visible", ylab="GLONASS satellites visible")
+# plot(jitter(satdist$gps), jitter(satdist$gln), pch=19, cex=0.5, xlim=c(5,14), ylim=c(5,14), xlab="GPS satellites visible", ylab="GLONASS satellites visible")
 # we see more GPS than GLONASS generally
 
 # let's see which satellite types are used for locks
@@ -317,10 +313,10 @@ ll$dt <- strptime(paste(ll$date, ll$time), format="%Y-%m-%d %H:%M:%S Z", tz="UTC
 # merge both to get dt in as
 m <- merge(ll, as, by="llid", all.x=TRUE)
 
-#plot(m$dt, m$satused, cex=0.5, pch=19)
+# plot(m$dt, m$satused, cex=0.5, pch=19)
 # too fuzzy
 
-lines(m$dt, filter(m$hdop, filter=rep(1/20,20)))
+# lines(m$dt, filter(m$hdop, filter=rep(1/20,20)))
 
 par(mar=c(4,4,2,4))
 plot(dferr$dt, dferr$deviation, type = "n", lwd=2, xlab = "Time (minutes)", ylab = "Deviation from trace (m)")
