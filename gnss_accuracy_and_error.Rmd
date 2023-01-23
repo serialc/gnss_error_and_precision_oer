@@ -224,20 +224,30 @@ While many satellites may be detected by a GNSS device, only up to 12 are used t
 
 **Figure X1: The movement and selection of satellites used during the Belval walk. The perspective**
 
+Despite 
+
 ```{r GLNvsGPS lock comparison, echo=FALSE}
 
 # we want the satellites, individually
+ll <- read.csv2('processing/ll_data/20221027-Crosscall-nmea.csv', sep=',')
 sv <- read.csv2('processing/sv_data/20221027-Crosscall-nmea.csv', sep=',')
-msv <- merge(ll, sv, by="llid", all.x=TRUE)
+as <- read.csv2('processing/as_data/20221027-Crosscall-nmea.csv', sep=',')
 
-# m has the the data of with which satellites we've locked on to
+ll$dt <- strptime(paste(ll$date, ll$time), format="%Y-%m-%d %H:%M:%S Z", tz="UTC")
+
+# merge ll to get dt and fix record -> llid
+msv <- merge(ll, sv, by="llid", all.x=TRUE)
+# msv describes the location of the satellites relative to sensor
+mas <- merge(ll, as, by="llid", all.x=TRUE)
+# mas has the the data of with which satellites we've locked on to
+
 # create an index of SVN and 
 sats <- lapply(split(sv, sv$satnum), function(x) { x$satsys[1]})
 sats$svn <- rownames(sats)
 
-# extract just the count of the satellite types at different locks
+# get the count of the satellites types we are receiving signals for
 satdist <- data.frame(do.call('rbind', lapply(split(msv$satsys, msv$llid), function(x) {
-  #x <- split(msv$satsys, msv$llid)[[1]]
+  #x <- split(msv$satsys, msv$llid)[[10]]
   n = length(x)
   gps = sum(x == 'GPS')
   gln = n - gps
@@ -254,7 +264,8 @@ plot(jitter(satdist$gps), jitter(satdist$gln), pch=19, cex=0.5, xlim=c(5,14), yl
 # we see more GPS than GLONASS generally
 
 # let's see which satellite types are used for locks
-satused_list <- lapply(split(m, m$llid), function(x) {
+satused_list <- lapply(split(mas, mas$llid), function(x) {
+  # x <- split(mas, mas$llid)[[685]]
   # get the last row and just the locked sats
   lr <- x[nrow(x), paste0('s', 1:12)]
   tmp <- data.frame(satsys=c('GLN', 'GPS'))
@@ -262,14 +273,34 @@ satused_list <- lapply(split(m, m$llid), function(x) {
   d <- data.frame(table(unlist(sapply(lr, function(s) {
     sats[[s]]
   }))))
+  if (nrow(d) == 1) {
+    return(c(NA,NA))
+  }
   satheaded <- unlist(merge(tmp, d, by.x="satsys", by.y="Var1")[,2,drop=FALSE], recursive = TRUE)
 })
 satused <- data.frame(do.call('rbind', satused_list))
 colnames(satused) <- c('GLN', 'GPS')
 
-par(new=TRUE)
-plot(filter(satused$GLN, filter=rep(1/20,20)), type='l', ylim=c(0,10))
-lines(filter(satused$GPS, filter=rep(1/20,20)))
+# pull out NA rows
+satused <- satused[!is.na(satused$GLN),]
+
+# display the distribution of satellites available over time
+
+# display the distribution of satellites used over time
+par(mar=c(4,5,1,1))
+plot(filter(satused$GPS/rowSums(satused), rep(1/40, 40)), xlab="Time over trip", ylab="Proportion of GPS satellite signals", ylim=c(0,1))
+lines(filter(satdist$gps/satdist$n, rep(1/40, 40)), lwd=2)
+legend('bottomright', legend = c("Sensed", "Used"), lwd=c(3,1))
+
+
+# display counts of each satellite system/constellation used
+plot(jitter(satdist$gps, factor = 2), jitter(satdist$gln, factor = 2), pch=19, cex=0.5, xlim=c(0,14), ylim=c(0,14), xlab="GPS satellites", ylab="GLONASS satellites", col=adjustcolor("black", 0.2))
+#par(new=TRUE)
+points(jitter(satused$GPS, 2), jitter(satused$GLN, 2), pch=21, bg=NA, cex=0.5, col=adjustcolor('blue', 0.2), xaxt='n', yaxt='n', xlab='', ylab='')
+abline(a = 0, b=1)
+#axis(side=3, at = 4:10, tick = 4:10, labels = 4:10, col.axis = "blue", col="blue")
+#axis(side=4, at = 1:9, tick = 1:9, labels = 1:9, col.axis="blue", col="blue")
+legend('topleft', legend = c("Sensed", "Used"), pch=c(19,21), col=adjustcolor(c("black", "blue"), 0.4), lwd=c(0,2), lty=NA)
 
 ```
 
