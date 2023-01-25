@@ -1,0 +1,7 @@
+Sats animated gif is 2627 frames (identify *.gif | wc -l).
+Animated at 30 frames per second.
+2627/30 = 87.57s
+
+Video length 47m25s => 2785s
+Want a length of 87.57s so 31.8 multiplier
+

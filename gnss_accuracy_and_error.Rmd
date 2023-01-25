@@ -228,7 +228,12 @@ While many satellites may be detected by a GNSS device, only up to 12 are used t
 
 **Figure 7: The movement and selection of satellites used during the Belval walk. The perspective**
 
-ADD video of map view (follow leaflet app) with this overlaid in the corner
+```{=html}
+<div style="position:relative;padding-top:56.25%;">
+<iframe src="https://www.youtube.com/embed/JwyN_BDl-3A" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+</div>
+
+```
 
 Despite 
 
