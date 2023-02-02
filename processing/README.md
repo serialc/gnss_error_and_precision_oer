@@ -15,5 +15,5 @@ python3 extract_nmea_data.py nmea_data/*
 python3 extract_nmea_data.py nmea_data/f1.csv nmea_data/f2.csv
 ```
 
-Note that the llid allows synchronizing data, such as date or location, between files.
+Note that the llid field in the generated files allows synchronizing data, such as date or location, between files.
 
