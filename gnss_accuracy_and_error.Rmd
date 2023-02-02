@@ -108,7 +108,7 @@ In the figure above we see the GNSS device data following closely the taken path
 
 Temporally, in the graph below, we can see that there is a lot of deviation from the taken path at the start and end of the walk.
 
-```{r echo=FALSE, warning=FALSE}
+```{r deviation from path, echo=FALSE, warning=FALSE}
 dferr <- read.table("gis/trace_data/BelvalWT-snap-deviation.csv", sep = ",", header = T)
 dferr$dt <- strptime(paste("2022-10-27", dferr$time), format="%Y-%m-%d %H:%M:%S", tz="UTC")
 
@@ -159,7 +159,7 @@ mtext(side=4, line = 2, "Number of satellite used for trilateration (smoothed)",
 
 It appears that the number of satellite signals received decreases at times of higher error.
 
-```{r, echo=FALSE}
+```{r sat count and error, echo=FALSE}
 mv <- read.csv2('processing/mv_data/20221027-Crosscall-nmea.csv', sep=',')
 mv$spd_ms <- as.numeric(mv$spd_ms)
 
@@ -184,13 +184,12 @@ mtext(side=4, line = 2, "Walking speed (km/h)", col=3)
 
 As buildings interfere with GNSS precision let's visualize building heights along the walked route.
 
-(ADD AN IFRAME TO CONTAIN THIS and then a link to the full page visualization)
-[see GPS path and 3D buildings](https://map.geoportail.lu/theme/main?bgLayer=basemap_2015_global&version=3&zoom=14&X=661470&Y=6361338&lang=en&rotation=0&layers=&opacities=&crosshair=false&3d_layers=ACT2022_BD_L_BATI3D_LOD2%2CVDL2022_LOD2_IMPORT_old%2CBridges_LOD2%2CACT2019_LiDAR_Bridges_LOD1%2CACT2019_LiDAR_Vegetation&3d_enabled=true&3d_lon=5.94209&3d_lat=49.49240&3d_elevation=1385&3d_heading=360.000&3d_pitch=-40.388&map_id=3a4b6e155fce4f448337ebe41ed6c005&embedded=true)
+[![See walked path with 3D buildings in full page view](images/3d_gnss_path.jpg)](https://map.geoportail.lu/theme/main?bgLayer=basemap_2015_global&version=3&zoom=14&X=661470&Y=6361338&lang=en&rotation=0&layers=&opacities=&crosshair=false&3d_layers=ACT2022_BD_L_BATI3D_LOD2%2CVDL2022_LOD2_IMPORT_old%2CBridges_LOD2%2CACT2019_LiDAR_Bridges_LOD1%2CACT2019_LiDAR_Vegetation&3d_enabled=true&3d_lon=5.94209&3d_lat=49.49240&3d_elevation=1385&3d_heading=360.000&3d_pitch=-40.388&map_id=3a4b6e155fce4f448337ebe41ed6c005&embedded=true)
 
-We can also view this graphically by comparing surrounding heights with error.
-Below, the mean height of the 50m around each recorded location is overlaid on the error.
+Rather than explore this visually, we can view this graphically by comparing surrounding building heights with error.
+Below, the mean building heights within 50m of each recorded location is overlaid on the error.
 
-```{r echo=FALSE, warning=FALSE}
+```{r elevation and error, echo=FALSE, warning=FALSE}
 # buildings heights data
 dfs <- read.table("./gis/trace_data/BelvalWT-snap-height_stats.csv", sep = ",", header = T)
 df <- merge(dferr, dfs[,c("rid", "X_count", "X_sum",  "X_mean", "X_median", "X_stdev", "X_min", "X_max")], by = "rid")
@@ -229,22 +228,37 @@ While many satellites may be detected by a GNSS device, only up to 12 are used t
 
 **Figure 7: The movement and selection of satellites used during the Belval walk. The perspective**
 
-ADD video of map view (follow leaflet app) with this overlaid in the corner
+```{=html}
+<div style="position:relative;padding-top:56.25%;">
+<iframe src="https://www.youtube.com/embed/JwyN_BDl-3A" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+</div>
+
+```
+
+Despite 
 
 ```{r GLNvsGPS lock comparison, echo=FALSE}
 
 # we want the satellites, individually
+ll <- read.csv2('processing/ll_data/20221027-Crosscall-nmea.csv', sep=',')
 sv <- read.csv2('processing/sv_data/20221027-Crosscall-nmea.csv', sep=',')
-msv <- merge(ll, sv, by="llid", all.x=TRUE)
+as <- read.csv2('processing/as_data/20221027-Crosscall-nmea.csv', sep=',')
 
-# m has the the data of with which satellites we've locked on to
+ll$dt <- strptime(paste(ll$date, ll$time), format="%Y-%m-%d %H:%M:%S Z", tz="UTC")
+
+# merge ll to get dt and fix record -> llid
+msv <- merge(ll, sv, by="llid", all.x=TRUE)
+# msv describes the location of the satellites relative to sensor
+mas <- merge(ll, as, by="llid", all.x=TRUE)
+# mas has the the data of with which satellites we've locked on to
+
 # create an index of SVN and 
 sats <- lapply(split(sv, sv$satnum), function(x) { x$satsys[1]})
 sats$svn <- rownames(sats)
 
-# extract just the count of the satellite types at different locks
+# get the count of the satellites types we are receiving signals for
 satdist <- data.frame(do.call('rbind', lapply(split(msv$satsys, msv$llid), function(x) {
-  #x <- split(msv$satsys, msv$llid)[[1]]
+  #x <- split(msv$satsys, msv$llid)[[10]]
   n = length(x)
   gps = sum(x == 'GPS')
   gln = n - gps
@@ -261,9 +275,8 @@ satdist <- satdist[satdist$n < 30,]
 # we see more GPS than GLONASS generally
 
 # let's see which satellite types are used for locks
-satused_list <- lapply(split(as, as$llid), function(x) {
-  #x <- split(as, as$llid)[[1]]
-  
+satused_list <- lapply(split(mas, mas$llid), function(x) {
+  # x <- split(mas, mas$llid)[[685]]
   # get the last row and just the locked sats
   lr <- x[nrow(x), paste0('s', 1:12)]
   tmp <- data.frame(satsys=c('GLN', 'GPS'))
@@ -271,10 +284,34 @@ satused_list <- lapply(split(as, as$llid), function(x) {
   d <- data.frame(table(unlist(sapply(lr, function(s) {
     sats[[s]]
   }))))
+  if (nrow(d) == 1) {
+    return(c(NA,NA))
+  }
   satheaded <- unlist(merge(tmp, d, by.x="satsys", by.y="Var1")[,2,drop=FALSE], recursive = TRUE)
 })
 satused <- data.frame(do.call('rbind', satused_list))
 colnames(satused) <- c('GLN', 'GPS')
+
+# pull out NA rows
+satused <- satused[!is.na(satused$GLN),]
+
+# display the distribution of satellites available over time
+
+# display the distribution of satellites used over time
+par(mar=c(4,5,1,1))
+plot(filter(satused$GPS/rowSums(satused), rep(1/40, 40)), xlab="Time over trip", ylab="Proportion of GPS satellite signals", ylim=c(0,1))
+lines(filter(satdist$gps/satdist$n, rep(1/40, 40)), lwd=2)
+legend('bottomright', legend = c("Sensed", "Used"), lwd=c(3,1))
+
+# display counts of each satellite system/constellation used
+plot(jitter(satdist$gps, factor = 2), jitter(satdist$gln, factor = 2), pch=19, cex=0.5, xlim=c(0,14), ylim=c(0,14), xlab="GPS satellites", ylab="GLONASS satellites", col=adjustcolor("black", 0.2))
+#par(new=TRUE)
+points(jitter(satused$GPS, 2), jitter(satused$GLN, 2), pch=21, bg=NA, cex=0.5, col=adjustcolor('blue', 0.2), xaxt='n', yaxt='n', xlab='', ylab='')
+abline(a = 0, b=1)
+#axis(side=3, at = 4:10, tick = 4:10, labels = 4:10, col.axis = "blue", col="blue")
+#axis(side=4, at = 1:9, tick = 1:9, labels = 1:9, col.axis="blue", col="blue")
+legend('topleft', legend = c("Sensed", "Used"), pch=c(19,21), col=adjustcolor(c("black", "blue"), 0.4), lwd=c(0,2), lty=NA)
+
 
 par(mar=c(4,4,1,4))
 plot(df$dt, df$deviation, col="white", type='n', yaxt='n', xlab='', ylab='')
@@ -287,6 +324,7 @@ plot(filter(satused$GLN, filter=rep(1/20,20)), type='l', ylim=c(0,10), ylab="Num
 lines(filter(satused$GLN, filter=rep(1/20,20)), col='black')
 lines(filter(satused$GPS, filter=rep(1/20,20)), col='white', lwd=4)
 lines(filter(satused$GPS, filter=rep(1/20,20)))
+
 
 ```
 

@@ -11,11 +11,11 @@
 
 <meta name="author" content="Sylvain Klein &amp; Cyrille Médard de Chardon" />
 
-<meta name="date" content="2022-11-24" />
+<meta name="date" content="2023-01-25" />
 
 <title>GNSS/GPS accuracy and error</title>
 
-<script src="gnss_accuracy_and_error_files/header-attrs-2.17/header-attrs.js"></script>
+<script src="gnss_accuracy_and_error_files/header-attrs-2.19/header-attrs.js"></script>
 <script src="gnss_accuracy_and_error_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="gnss_accuracy_and_error_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -164,7 +164,7 @@ pre code {
 
 <h1 class="title toc-ignore">GNSS/GPS accuracy and error</h1>
 <h4 class="author">Sylvain Klein &amp; Cyrille Médard de Chardon</h4>
-<h4 class="date">2022-11-24</h4>
+<h4 class="date">2023-01-25</h4>
 
 </div>
 
@@ -187,12 +187,10 @@ id="toc-the-number-of-satellites">The number of satellites</a></li>
 <li><a href="#dynamic-satellite-selection"
 id="toc-dynamic-satellite-selection">Dynamic satellite
 selection</a></li>
-<li><a href="#hdop-metric-vs-sat-count-vs-ground-truthed-error"
-id="toc-hdop-metric-vs-sat-count-vs-ground-truthed-error">HDOP metric vs
-sat count vs ground-truthed error</a></li>
-<li><a href="#comparison-of-errors-and-wrap-up"
-id="toc-comparison-of-errors-and-wrap-up">Comparison of errors (?) and
-wrap up</a></li>
+<li><a href="#dop-measures" id="toc-dop-measures">DOP measures</a></li>
+<li><a href="#conclusion-on-gnss-accuracy-and-errors"
+id="toc-conclusion-on-gnss-accuracy-and-errors">Conclusion on GNSS
+accuracy and errors</a></li>
 <li><a href="#notes" id="toc-notes">Notes</a></li>
 </ul></li>
 </ul>
@@ -261,27 +259,42 @@ center, then to the Park to the west and returning, ending in front of
 the University of LUxembourg’s Maison des Sciences Humaines.</p>
 <p>Note that the walked path starts and ends in an urban area with tall
 structures, with some travel trough open green spaces in-between.</p>
+<p>While a smartphone and app was used to record location, the app uses
+NMEA data which is not the same as typically using smartphone location
+data. Smartphones apps, such as Google Maps or Navigation, typically use
+other means to estimate location that consume less battery power: -
+proximity to cellular towers - proximity to Wi-Fi hotspots</p>
+<p>Requirements for needed accuracy and availability of the above
+determine whether GNSS processing will be used to provide accurate
+georeferencing.</p>
 <p><img src="maps/BelvalWalk_trace.png"
 alt="Trace of a walk in Belval, Luxembourg" /> <strong>Figure 1: Trace
 of walked path.</strong></p>
-<p>NEED A NORTH ARROW - REREND AND EXPORT DIRECTLY FROM QGIS</p>
 <p>The path in the figure above (green line) was manually digitized
 using QGIS according to the route taken.</p>
 </div>
 <div id="the-sensed-path---gnss-data" class="section level2">
 <h2>The sensed path - GNSS data</h2>
 <p>GNSS devices decode satellite signals to determine their location.
-The process locates, with some error, the device’s location by
-determining satellite distances (called trilateration). This decoding
-process creates a diversity of data, such as device location (lat/long),
-elevation, and various error measures, among others. This data in its
-raw form is called NMEA data after the organization that defined the
-standard, the National Marine Electronics Association. There are
-different versions of the standard. Rather than nicely structured, NMEA
-data can be quite messy or corrupted and needs further refinement before
-being easily usable. Many devices and data analysis tools will process
-the NMEA data for you so that it is already comprehensible in data or
-visual form.</p>
+The signals contain three data parts:</p>
+<ul>
+<li>A unique identifier (the spacecraft vehicle number - SVN)</li>
+<li>The time the signal was sent</li>
+<li>The implicit location of the satellite (the orbit/ephemeris and
+location on it - sort of)</li>
+</ul>
+<p>The decoding process locates, with some error, the device’s location
+relative to the Earth’s sea-level altitude by determining the satellites
+distances (a process called trilateration). This decoding process
+creates a diversity of data, such as device location (lat/long),
+elevation, and various error measures, among others.</p>
+<p>This generated data, in its raw form, is called NMEA data after the
+organization that defined the standard, the National Marine Electronics
+Association. There are different versions of the standard. Rather than
+nicely structured, NMEA data can be quite messy or corrupted and needs
+further refinement before being easily usable. Many devices and data
+analysis tools will process the NMEA data for you so that it is already
+comprehensible in data or visual form.</p>
 <pre><code>$GPGSA,A,3,02,04,05,06,07,09,11,16,20,29,30,,1.0,0.6,0.8*3B
 $GPVTG,120.2,T,120.2,M,2.9,N,5.4,K,D*2C
 $GPRMC,113627,A,4930.382271,N,00556.308064,E,2.9,120.2,271022,1.1,W,D*0E
@@ -295,31 +308,32 @@ $GLGSV,2,2,08,88,30,251,37,81,29,314,27,72,46,073,35,87,06,209,*6A</code></pre>
 <p>We captured the NMEA sentences with an Android smartphone App called
 NMEA Tools Version 2.7.35. The NMEA data was <a
 href="processing/extract_nmea_data.py">processed using a Python script
-to extract</a> the lat/long points and other data.</p>
+to extract</a> the lat/long points and other data. Depending on your
+device multiple GNSS constellations may be captured.</p>
 <p>Besides lat/long data, NMEA data also contains: - Relative angles of
 GNSS satellites visible/detected - Satellites used to determine the
 sensor’s location - Error of the location measurement - Movement speed
 and bearing/direction</p>
 <p>In the figure below the lat/long points are added to the map of the
 walked path.</p>
-<p>Note that points can easily be mapped or graphed as lines as well as
-points. While using lines is beneficial in showing continuity or
-direction, lines can also obscure points that communicate information,
-such as the accuracy of data (a straight line can either mean a straight
-path or missing data) or changes in speed (the difference in distance
-between points recorded at regular time intervals).</p>
+<p>Note that point data can as easily be mapped or graphed as lines as
+well as points. While using lines is beneficial in showing continuity,
+sequence, or direction, lines can also obscure points that communicate
+information, such as the accuracy of data (a straight line can either
+mean a straight path or missing data) or changes in speed (the
+difference in distance between points recorded at regular time
+intervals).</p>
 <p>The maps and figures will show point and line data as
 appropriate.</p>
 <p><img src="maps/BelvalWalk_trace%20with%20gps.png"
 alt="Image of actual path and GNSS points" /> <strong>Figure 2: Overlay
 of GNSS sensed path over walked path.</strong></p>
-<p>NEED A NORTH ARROW - REREND AND EXPORT DIRECTLY FROM QGIS</p>
 <p>In the figure above we see the GNSS device data following closely the
 taken path in the western area, but less so in the south-eastern half
 where more buildings are present.</p>
 <p>Temporally, in the graph below, we can see that there is a lot of
 deviation from the taken path at the start and end of the walk.</p>
-<p><img src="gnss_accuracy_and_error_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p><img src="gnss_accuracy_and_error_files/figure-html/deviation%20from%20path-1.png" width="672" /></p>
 <p><strong>Figure 3: Plot of distance error between traced and sensed
 paths over time.</strong></p>
 </div>
@@ -327,25 +341,27 @@ paths over time.</strong></p>
 <h2>What causes error?</h2>
 <p>Since GNSS accuracy depends on receiving satellite signals,
 interference between these and the sensor will increase error. Buildings
-are a common cause of location error, but forests and topography can
-also degrade, reflect, or block satellite signals.</p>
+are a common cause of location error, but weather, forests, the
+atmosphere, and topography can also degrade, refract, reflect, or block
+satellite signals.</p>
 <p><img src="gnss_accuracy_and_error_files/figure-html/satcount%20along%20route-1.png" width="672" /></p>
 <p><strong>Figure 4: The error and number of satellites used to locate
 the sensor.</strong></p>
 <p>It appears that the number of satellite signals received decreases at
 times of higher error.</p>
-<p><img src="gnss_accuracy_and_error_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="gnss_accuracy_and_error_files/figure-html/sat%20count%20and%20error-1.png" width="672" /></p>
 <p>As buildings interfere with GNSS precision let’s visualize building
 heights along the walked route.</p>
-<p>(ADD AN IFRAME TO CONTAIN THIS and then a link to the full page
-visualization) <a
-href="https://map.geoportail.lu/theme/main?bgLayer=basemap_2015_global&amp;version=3&amp;zoom=14&amp;X=661470&amp;Y=6361338&amp;lang=en&amp;rotation=0&amp;layers=&amp;opacities=&amp;crosshair=false&amp;3d_layers=ACT2022_BD_L_BATI3D_LOD2%2CVDL2022_LOD2_IMPORT_old%2CBridges_LOD2%2CACT2019_LiDAR_Bridges_LOD1%2CACT2019_LiDAR_Vegetation&amp;3d_enabled=true&amp;3d_lon=5.94209&amp;3d_lat=49.49240&amp;3d_elevation=1385&amp;3d_heading=360.000&amp;3d_pitch=-40.388&amp;map_id=3a4b6e155fce4f448337ebe41ed6c005&amp;embedded=true">see
-GPS path and 3D buildings</a></p>
-<p>We can also view this graphically by comparing surrounding heights
-with error. Below, the mean height of the 50m around each recorded
-location is overlaid on the error.</p>
-<p><img src="gnss_accuracy_and_error_files/figure-html/unnamed-chunk-3-1.png" width="672" />
-<strong>Figure 4: Plot of surrounding building heights and error along
+<p><a
+href="https://map.geoportail.lu/theme/main?bgLayer=basemap_2015_global&amp;version=3&amp;zoom=14&amp;X=661470&amp;Y=6361338&amp;lang=en&amp;rotation=0&amp;layers=&amp;opacities=&amp;crosshair=false&amp;3d_layers=ACT2022_BD_L_BATI3D_LOD2%2CVDL2022_LOD2_IMPORT_old%2CBridges_LOD2%2CACT2019_LiDAR_Bridges_LOD1%2CACT2019_LiDAR_Vegetation&amp;3d_enabled=true&amp;3d_lon=5.94209&amp;3d_lat=49.49240&amp;3d_elevation=1385&amp;3d_heading=360.000&amp;3d_pitch=-40.388&amp;map_id=3a4b6e155fce4f448337ebe41ed6c005&amp;embedded=true"><img
+src="images/3d_gnss_path.jpg"
+alt="See walked path with 3D buildings in full page view" /></a></p>
+<p>Rather than explore this visually, we can view this graphically by
+comparing surrounding building heights with error. Below, the mean
+building heights within 50m of each recorded location is overlaid on the
+error.</p>
+<p><img src="gnss_accuracy_and_error_files/figure-html/elevation%20and%20error-1.png" width="672" />
+<strong>Figure 5: Plot of surrounding building heights and error along
 the walked path.</strong></p>
 <p>Clearly the distance between the known path and the sensed path,
 increases according to the surrounding structure heights.</p>
@@ -364,39 +380,58 @@ track multiple satellites types.</p>
 style="width:45.0%" alt="Visibile GLONASS satellites" /> <img
 src="images/20221027-Crosscall-nmea_satpaths_INV_GPS.png"
 style="width:45.0%" alt="Visibile GPS satellites" /></p>
-<p><strong>Figure X: Sky plots of GLONASS (left) and GPS (right)
+<p><strong>Figure 6: Sky plots of GLONASS (left) and GPS (right)
 satellites in view while completing walk.</strong></p>
 </div>
 <div id="dynamic-satellite-selection" class="section level2">
 <h2>Dynamic satellite selection</h2>
 <p>While many satellites may be detected by a GNSS device, only up to 12
-are used to calculate the location. Depending on reception to satellites
-as the device and the satellites move, the selection used changes over
+are used to calculate location. Depending on satellite reception as the
+device and the satellites move, the selection used changes over
 time.</p>
 <div class="figure">
 <img src="images/sat_anim.gif" alt="" />
 <p class="caption">Dynamic GNSS selection over time</p>
 </div>
-<p><strong>Figure X1: The movement and selection of satellites used
+<p><strong>Figure 7: The movement and selection of satellites used
 during the Belval walk. The perspective</strong></p>
+<div style="position:relative;padding-top:56.25%;">
+<iframe src="https://www.youtube.com/embed/JwyN_BDl-3A" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
 </div>
-<div id="hdop-metric-vs-sat-count-vs-ground-truthed-error"
-class="section level2">
-<h2>HDOP metric vs sat count vs ground-truthed error</h2>
-<p>See also VDOP, and PDOP.</p>
+
+<p>Despite</p>
+<p><img src="gnss_accuracy_and_error_files/figure-html/GLNvsGPS%20lock%20comparison-1.png" width="672" /><img src="gnss_accuracy_and_error_files/figure-html/GLNvsGPS%20lock%20comparison-2.png" width="672" /><img src="gnss_accuracy_and_error_files/figure-html/GLNvsGPS%20lock%20comparison-3.png" width="672" /></p>
+<p>This is very messy. Not much to conclude from this.</p>
 </div>
-<div id="comparison-of-errors-and-wrap-up" class="section level2">
-<h2>Comparison of errors (?) and wrap up</h2>
-<p>Other sources of errors: weather, ..</p>
+<div id="dop-measures" class="section level2">
+<h2>DOP measures</h2>
+<p>We have spend lots of time comparing the sensed location to the
+actual estimation of the travel path. Fortunately there may be an easier
+way.</p>
+<p>NMEA data contains Dilution of Precision (DOP) measures. There are
+three: - Vertical DOP (1D) - Horizontal DOP (2D) - Position DOP (3D)</p>
+<p>Lower DOP values are better. The values can range from under 1, which
+are ideal, to over 20, being very poor. Dilution of precision integrates
+the number and position of satellites to determine the likely accuracy
+of the location measurement. These measures simply take into account
+what we have already discussed, the number and relative position of
+satellites and their signals to your GNSS sensor device.</p>
+<p><img src="gnss_accuracy_and_error_files/figure-html/DOP%20measures-1.png" width="672" /></p>
+<p>Despite DOP values being labelled as ‘good’, the figure above shows
+that small increases can quickly augment the error distance.</p>
+</div>
+<div id="conclusion-on-gnss-accuracy-and-errors" class="section level2">
+<h2>Conclusion on GNSS accuracy and errors</h2>
+<p>We’ve explored a variety of error sources comparing them to a walked
+path. The intent was to highlight the lack and causes of GNSS accuracy.
+In practice GNSS can be used to measure certain features with
+non-trivial error, depending on the needs. Alternatives exist to improve
+accuracy, such as differential GNSS, but also more independent (i.e.,
+non-technical) and low-tech solutions, such as measuring tapes and
+compasses.</p>
 </div>
 <div id="notes" class="section level2">
 <h2>Notes</h2>
-<ul>
-<li>While we used a smartphone app to record NMEA data, this may not the
-same as using smartphone location data, such as that positioned in
-Gooble Maps, which may use other measures such as proximity to cellular
-towers or Wi-Fi hotspots to georeference location.</li>
-</ul>
 </div>
 </div>
 
