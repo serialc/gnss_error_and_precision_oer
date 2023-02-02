@@ -51,7 +51,7 @@ Below demonstrates an extremely simplified illustration of how satellite angle r
 With this basic introduction to how GNSS receivers determine location and satellite location can impact this, we will take a look at some actual data to see how it varies relative to actual locations. Due to how GNSS receivers operate many other factors can influence their accuracy.
 
 ## A walked path
-Below is a walked tour through and in the vicinity of Belval (Luxembourg), starting in the east next to the furnaces, going along the shopping centre, then around the Park to the west and returning, ending in front of the University of Luxembourg's Maison des Sciences Humaines (Social Sciences building).
+Below is a walked tour through and in the vicinity of Belval (Luxembourg), starting in the east next to the furnaces, going along the shopping centre, then around the Park to the west and returning, ending in front of LISER's and the University of Luxembourg's Maison des Sciences Humaines (Social Sciences building).
 
 Note that the walked path starts and ends in an urban area with tall structures, with some travel through open spaces.
 
@@ -327,7 +327,7 @@ lines(filter(satdist$gps/satdist$n, rep(1/40, 40)), lwd=2)
 legend('bottomright', legend = c("Sensed", "Used"), lwd=c(3,1))
 ```
 
-**Figure 9: During the walk the GPS constellation where 50-60% of the satellites with the remainder belonging to GLONASS. Despite this about 80% of the satellites used to determine location where from the GPS constellation with the remainder from GLONASS.**
+**Figure 9: During the walk the GPS constellation provided 50-60% of the satellites with the remainder belonging to GLONASS. Despite this about 80% of the satellites used to determine location were from the GPS constellation with the remainder from GLONASS.**
 
 ```{r GLNvsGPS lock comparison2, echo=FALSE}
 # display counts of each satellite system/constellation used
@@ -412,5 +412,11 @@ We have explored a variety of error sources along a walked path. The intent was 
 
 Created by Sylvain Klein & Cyrille Médard de Chardon in 2022-2023 as part of the Digilego project.
 
+## Some used & alternative sources
+
+[GPS.gov](https://www.gps.gov/systems/gnss/)
+[aprs.gids.nl/nmea](http://aprs.gids.nl/nmea/)
+[gpsd.gitlab.io/gpsd/NMEA.html](https://gpsd.gitlab.io/gpsd/NMEA.html)
+[gisgeography.com](https://gisgeography.com/gps-accuracy-hdop-pdop-gdop-multipath/)
 
 
