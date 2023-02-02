@@ -11,11 +11,10 @@
 
 <meta name="author" content="Sylvain Klein &amp; Cyrille Médard de Chardon" />
 
-<meta name="date" content="2023-01-25" />
 
 <title>GNSS/GPS accuracy and error</title>
 
-<script src="gnss_accuracy_and_error_files/header-attrs-2.19/header-attrs.js"></script>
+<script src="gnss_accuracy_and_error_files/header-attrs-2.20/header-attrs.js"></script>
 <script src="gnss_accuracy_and_error_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="gnss_accuracy_and_error_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -164,7 +163,7 @@ pre code {
 
 <h1 class="title toc-ignore">GNSS/GPS accuracy and error</h1>
 <h4 class="author">Sylvain Klein &amp; Cyrille Médard de Chardon</h4>
-<h4 class="date">2023-01-25</h4>
+<h4 class="date">Creation date: 2023-02-01</h4>
 
 </div>
 
@@ -175,6 +174,9 @@ accuracy &amp; error</a>
 <ul>
 <li><a href="#introduction" id="toc-introduction">Introduction</a></li>
 <li><a href="#outline" id="toc-outline">Outline</a></li>
+<li><a href="#a-brief-explanation-of-gnss"
+id="toc-a-brief-explanation-of-gnss">A brief explanation of
+GNSS</a></li>
 <li><a href="#a-walked-path" id="toc-a-walked-path">A walked
 path</a></li>
 <li><a href="#the-sensed-path---gnss-data"
@@ -187,6 +189,8 @@ id="toc-the-number-of-satellites">The number of satellites</a></li>
 <li><a href="#dynamic-satellite-selection"
 id="toc-dynamic-satellite-selection">Dynamic satellite
 selection</a></li>
+<li><a href="#which-satellites-are-used"
+id="toc-which-satellites-are-used">Which satellites are used?</a></li>
 <li><a href="#dop-measures" id="toc-dop-measures">DOP measures</a></li>
 <li><a href="#conclusion-on-gnss-accuracy-and-errors"
 id="toc-conclusion-on-gnss-accuracy-and-errors">Conclusion on GNSS
@@ -212,8 +216,9 @@ system we are using. While lat/long coordinates can be <a
 href="https://xkcd.com/2170/">extremely precise</a> the question this
 resource aims to explore is how <em>accurate</em> are GNSS recording
 devices and what impacts their accuracy.</p>
-<p>A brief reminder of the difference between <strong>accuracy</strong>
-and <strong>precision</strong>:</p>
+<p>As we are focusing on <strong>accuracy</strong>, let’s clarify the
+difference between <strong>accuracy</strong> and
+<strong>precision</strong>:</p>
 <table>
 <thead>
 <tr class="header">
@@ -240,38 +245,83 @@ and <strong>precision</strong>:</p>
 </tr>
 </tbody>
 </table>
-<p>Admittedly some confusion and convergence between the two terms’
-meanings can occur when precision decreases for an accurate measurement
-(e.g., the value 2.4173 reported as 2).</p>
-<p>See an <a href="https://xkcd.com/2300/">alternative example</a>.</p>
+<p>Here’s an <a href="https://xkcd.com/2696/">alternative definition
+example</a>.</p>
 </div>
 <div id="outline" class="section level2">
 <h2>Outline</h2>
-<p>This resource will analyze through exploration the accuracy and error
-of location data collected along a walk through Belval, LUxembourg,
-using a GNSS device (Crosscall Trekker-M1 Core).</p>
+<p>This resource analyses through exploration the accuracy and error of
+location data collected along a walk through Belval, Luxembourg, using a
+GNSS device (Crosscall Trekker-M1 Core).</p>
+</div>
+<div id="a-brief-explanation-of-gnss" class="section level2">
+<h2>A brief explanation of GNSS</h2>
+<p>GNSS sensors or devices capture signals from satellites and sometimes
+base stations to determine their location. The satellites orbit at a
+distance roughly 20,000 km from the surface of the Earth. The American
+GPS system with its constellation of satellites was the first GNSS.
+There are now other GNSS satellite constellations: China’s BeiDou (35
+satellites), the EU’s Galileo (24+ satellites), Russia’s GLONASS (24+
+satellites), India’s IRNSS (7 satellites), and Japan’s QZSS (7
+satellites by 2023).</p>
+<p>Some GNSS systems complement existing offers to improve regional
+sensing (e.g. Japan’s QZSS), while others can function independently.
+Different GNSS sensors can detect different and multiple satellite
+constellations. While having much more than 10 satellites ‘visible’ by
+the GNSS sensor makes little difference, it’s their position that
+matters more. For this reason, while 20 satellite signals may be sensed
+by a device, a selection process takes place to optimize which will be
+used or locked, to calculate a location. Therefore having more
+satellites available is only beneficial in that it allows the optimizing
+satellite selection.</p>
+<p>Determining the location of the GNSS receiver uses a process called
+trilateration. This involves determining the distance from multiple
+objects, in this case satellites. As mentioned, their position will
+determine the possible error. Distance is determined by very precise
+clocks in the satellites, broadcasting the time they send out a signal,
+which is used to calculate the travel time to the receiver.</p>
+<p>Below demonstrates an extremely simplified illustration of how
+satellite angle relative to the receiver and one another will create
+varying shapes and sizes of error. In this illustration the areas where
+the circles overlap is the size of the uncertainty. The left frame
+illustrates what happens when satellites are low on the horizon, versus
+on the middle frame, when one is at the azimuth and the horizon, and
+finally the right frame when two satellites are overhead.</p>
+<div class="figure">
+<img src="images/gnss_error.svg" alt="" />
+<p class="caption">Three frames with error circles</p>
+</div>
+<p><strong>Figure 0: Satellite configurations and the resulting shapes
+and areas of inaccuracy.</strong></p>
+<p>With this basic introduction to how GNSS receivers determine location
+and satellite location can impact this, we will take a look at some
+actual data to see how it varies relative to actual locations. Due to
+how GNSS receivers operate many other factors can influence their
+accuracy.</p>
 </div>
 <div id="a-walked-path" class="section level2">
 <h2>A walked path</h2>
-<p>Below is a walked tour through and in the vicinity of Belval,
-starting in the east next to the furnaces, going along the shopping
-center, then to the Park to the west and returning, ending in front of
-the University of LUxembourg’s Maison des Sciences Humaines.</p>
+<p>Below is a walked tour through and in the vicinity of Belval
+(Luxembourg), starting in the east next to the furnaces, going along the
+shopping centre, then around the Park to the west and returning, ending
+in front of the University of Luxembourg’s Maison des Sciences Humaines
+(Social Sciences building).</p>
 <p>Note that the walked path starts and ends in an urban area with tall
-structures, with some travel trough open green spaces in-between.</p>
+structures, with some travel through open spaces.</p>
 <p>While a smartphone and app was used to record location, the app uses
 NMEA data which is not the same as typically using smartphone location
 data. Smartphones apps, such as Google Maps or Navigation, typically use
-other means to estimate location that consume less battery power: -
-proximity to cellular towers - proximity to Wi-Fi hotspots</p>
+other or additional means to estimate location that consume less battery
+power: - proximity to cellular towers - proximity to Wi-Fi hotspots</p>
 <p>Requirements for needed accuracy and availability of the above
-determine whether GNSS processing will be used to provide accurate
-georeferencing.</p>
+alternatives obviously determine whether GNSS processing will be used to
+provide accurate geolocation.</p>
 <p><img src="maps/BelvalWalk_trace.png"
 alt="Trace of a walk in Belval, Luxembourg" /> <strong>Figure 1: Trace
 of walked path.</strong></p>
-<p>The path in the figure above (green line) was manually digitized
-using QGIS according to the route taken.</p>
+<p>The above figure illustrates the route walked (green line) which was
+manually digitized using QGIS. This will serve to compare and evaluate
+the recorded or sensed GNSS location.</p>
 </div>
 <div id="the-sensed-path---gnss-data" class="section level2">
 <h2>The sensed path - GNSS data</h2>
@@ -284,10 +334,10 @@ The signals contain three data parts:</p>
 location on it - sort of)</li>
 </ul>
 <p>The decoding process locates, with some error, the device’s location
-relative to the Earth’s sea-level altitude by determining the satellites
-distances (a process called trilateration). This decoding process
-creates a diversity of data, such as device location (lat/long),
-elevation, and various error measures, among others.</p>
+and elevation relative to the Earth’s sea-level equivalent by
+determining the satellites distances (the trilateration process). This
+decoding process creates a diversity of data, such as device location
+(lat/long), elevation, and various error measures, among others.</p>
 <p>This generated data, in its raw form, is called NMEA data after the
 organization that defined the standard, the National Marine Electronics
 Association. There are different versions of the standard. Rather than
@@ -328,9 +378,9 @@ appropriate.</p>
 <p><img src="maps/BelvalWalk_trace%20with%20gps.png"
 alt="Image of actual path and GNSS points" /> <strong>Figure 2: Overlay
 of GNSS sensed path over walked path.</strong></p>
-<p>In the figure above we see the GNSS device data following closely the
-taken path in the western area, but less so in the south-eastern half
-where more buildings are present.</p>
+<p>In the figure above we see the device-sensed path data following
+closely the taken path in the western area, but less so in the
+south-eastern half where more buildings are present.</p>
 <p>Temporally, in the graph below, we can see that there is a lot of
 deviation from the taken path at the start and end of the walk.</p>
 <p><img src="gnss_accuracy_and_error_files/figure-html/deviation%20from%20path-1.png" width="672" /></p>
@@ -340,15 +390,17 @@ paths over time.</strong></p>
 <div id="what-causes-error" class="section level2">
 <h2>What causes error?</h2>
 <p>Since GNSS accuracy depends on receiving satellite signals,
-interference between these and the sensor will increase error. Buildings
-are a common cause of location error, but weather, forests, the
-atmosphere, and topography can also degrade, refract, reflect, or block
-satellite signals.</p>
+interference between the sensor and the signals will increase error.
+Buildings are a common cause of location error, but weather, forests,
+the atmosphere, and topography can also degrade, refract, reflect, or
+block satellite signals, reducing the location accuracy.</p>
 <p><img src="gnss_accuracy_and_error_files/figure-html/satcount%20along%20route-1.png" width="672" /></p>
 <p><strong>Figure 4: The error and number of satellites used to locate
 the sensor.</strong></p>
 <p>It appears that the number of satellite signals received decreases at
-times of higher error.</p>
+times of higher error. This can be misleading however, as a received
+signal can still be delayed and/or reflected. So this may not be an
+effective means of measuring (in)accuracy.</p>
 <p><img src="gnss_accuracy_and_error_files/figure-html/sat%20count%20and%20error-1.png" width="672" /></p>
 <p>As buildings interfere with GNSS precision let’s visualize building
 heights along the walked route.</p>
@@ -358,15 +410,14 @@ src="images/3d_gnss_path.jpg"
 alt="See walked path with 3D buildings in full page view" /></a></p>
 <p>Rather than explore this visually, we can view this graphically by
 comparing surrounding building heights with error. Below, the mean
-building heights within 50m of each recorded location is overlaid on the
-error.</p>
+building heights within 50m of each recorded location is graphed with
+the error distance.</p>
 <p><img src="gnss_accuracy_and_error_files/figure-html/elevation%20and%20error-1.png" width="672" />
 <strong>Figure 5: Plot of surrounding building heights and error along
 the walked path.</strong></p>
 <p>Clearly the distance between the known path and the sensed path,
-increases according to the surrounding structure heights.</p>
-<p>As expected surrounding structures reduce the GNSS sensing device
-accuracy.</p>
+increases according to average building heights, as expected.</p>
+<p>High structures reduce the GNSS device accuracy.</p>
 </div>
 <div id="the-number-of-satellites" class="section level2">
 <h2>The number of satellites</h2>
@@ -382,26 +433,45 @@ src="images/20221027-Crosscall-nmea_satpaths_INV_GPS.png"
 style="width:45.0%" alt="Visibile GPS satellites" /></p>
 <p><strong>Figure 6: Sky plots of GLONASS (left) and GPS (right)
 satellites in view while completing walk.</strong></p>
+<p>While the East and West are perhaps reversed to expectations,
+consider these plots as the views when you look up at the sky.</p>
 </div>
 <div id="dynamic-satellite-selection" class="section level2">
 <h2>Dynamic satellite selection</h2>
 <p>While many satellites may be detected by a GNSS device, only up to 12
-are used to calculate location. Depending on satellite reception as the
-device and the satellites move, the selection used changes over
+are used to calculate location. Depending on satellite reception, and
+optimal angles, the selection of used satellites to determine the
+receiver’s location changes as the device and the satellites move over
 time.</p>
 <div class="figure">
 <img src="images/sat_anim.gif" alt="" />
 <p class="caption">Dynamic GNSS selection over time</p>
 </div>
 <p><strong>Figure 7: The movement and selection of satellites used
-during the Belval walk. The perspective</strong></p>
+during the Belval walk. The perspective here is top-down, like looking
+at a map.</strong></p>
+<p>We can observe if it’s possible to see a pattern in satellite
+selection based on where the device is as it moves along the walk in the
+video below.</p>
+
 <div style="position:relative;padding-top:56.25%;">
-<iframe src="https://www.youtube.com/embed/JwyN_BDl-3A" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+<iframe src="https://www.youtube.com/embed/JwyN_BDl-3A?rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
 </div>
 
-<p>Despite</p>
-<p><img src="gnss_accuracy_and_error_files/figure-html/GLNvsGPS%20lock%20comparison-1.png" width="672" /><img src="gnss_accuracy_and_error_files/figure-html/GLNvsGPS%20lock%20comparison-2.png" width="672" /><img src="gnss_accuracy_and_error_files/figure-html/GLNvsGPS%20lock%20comparison-3.png" width="672" /></p>
-<p>This is very messy. Not much to conclude from this.</p>
+</div>
+<div id="which-satellites-are-used" class="section level2">
+<h2>Which satellites are used?</h2>
+<p>With this device and for this walk both GPS and GLONASS satellites
+were detected.</p>
+<p>It’s possible to compare which types of satellites are more available
+and also actually used for location determination.</p>
+<p><img src="gnss_accuracy_and_error_files/figure-html/GLNvsGPS%20lock%20comparison-1.png" width="672" /></p>
+<p><strong>Figure 8: During the walk the GPS constellation where 50-60%
+of the satellites with the remainder belonging to GLONASS. Despite this
+about 80% of the satellites used to determine location where from the
+GPS constellation with the remainder from GLONASS.</strong></p>
+<p>This GNSS receiver uses GPS signals more than GLONASS. Why might this
+be the case?</p>
 </div>
 <div id="dop-measures" class="section level2">
 <h2>DOP measures</h2>
@@ -416,9 +486,14 @@ the number and position of satellites to determine the likely accuracy
 of the location measurement. These measures simply take into account
 what we have already discussed, the number and relative position of
 satellites and their signals to your GNSS sensor device.</p>
+<p>Looking again at Figure 0, consider how different satellite positions
+could impact DOP types differently.</p>
 <p><img src="gnss_accuracy_and_error_files/figure-html/DOP%20measures-1.png" width="672" /></p>
-<p>Despite DOP values being labelled as ‘good’, the figure above shows
-that small increases can quickly augment the error distance.</p>
+<p><strong>Figure 9: Different DOP values along the walk. DOP
+fluctuations are higher when positional error is greater.</strong></p>
+<p>Despite the DOP values in the figure above having just been labelled
+as ‘good’, the figure above shows that small increases can quickly
+augment the error distance (deviation).</p>
 </div>
 <div id="conclusion-on-gnss-accuracy-and-errors" class="section level2">
 <h2>Conclusion on GNSS accuracy and errors</h2>
