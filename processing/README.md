@@ -1,6 +1,6 @@
 # NMEA parsing (Python script)
 
-The `extract_nmea_data.py` script in the [processing](processing) folder will parse NMEA data and split it into the following CSV folders:
+The `extract_nmea_data.py` script in the [processing](https://github.com/serialc/gnss_accuracy_and_error_oer/tree/main/processing) folder will parse NMEA data and split it into the following CSV folders:
 - as_data ($GPGSA): containing DOP and identifiers of satellites used for position fix.
 - ll_data ($GPGGA): contains the date, time, latitude and longitude.
 - mv_data ($GPRMC): contains movement data such as speed, bearing.
