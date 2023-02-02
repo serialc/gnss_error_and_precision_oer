@@ -1,8 +1,8 @@
 # GNSS accuracy and error lesson
 
-[A visual lesson on GNSS accuracy and error](gnss_accuracy_and_error.html)
+[A visual lesson on GNSS accuracy and error](https://serialc.github.io/gnss_accuracy_and_error_oer/)
 
-[![A sky-plot of satellites sensed during a walk](images/20221027-Crosscall-nmea_satpaths_INV_GPS.png)](gnss_accuracy_and_error.html)
+[![A sky-plot of satellites sensed during a walk](images/20221027-Crosscall-nmea_satpaths_INV_GPS.png)](https://serialc.github.io/gnss_accuracy_and_error_oer/)
 
 # NMEA parsing (Python script)
 
