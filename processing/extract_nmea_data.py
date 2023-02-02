@@ -39,7 +39,7 @@ for fp in sys.argv[1:]:
     fsv.write('svid,llid,satsys,satnum,elev,azim,SNR\n')
 
     fmv = open(mvdp + fn.split('.')[0] + '.csv', 'w')
-    fmv.write('mvid,llid,dt,warning,lat,lng,spd_knots,spd_ms,bearing,mag_var\n')
+    fmv.write('mvid,llid,dt,status,lat,lng,spd_knots,spd_ms,bearing,mag_var\n')
 
     fas = open(asdp + fn.split('.')[0] + '.csv', 'w')
     fas.write('asid,llid,mode,fix,satused,pdop,hdop,vdop,' + ','.join(['s' + str(s) for s in range(1,13)]) + '\n')

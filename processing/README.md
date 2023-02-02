@@ -1,9 +1,3 @@
-# GNSS accuracy and error lesson
-
-[A visual lesson on GNSS accuracy and error](gnss_accuracy_and_error.html)
-
-[![A sky-plot of satellites sensed during a walk](images/20221027-Crosscall-nmea_satpaths_INV_GPS.png)](gnss_accuracy_and_error.html)
-
 # NMEA parsing (Python script)
 
 The `extract_nmea_data.py` script in the [processing](processing) folder will parse NMEA data and split it into the following CSV folders:
@@ -23,11 +17,3 @@ python3 extract_nmea_data.py nmea_data/f1.csv nmea_data/f2.csv
 
 Note that the llid allows synchronizing data, such as date or location, between files.
 
-## Note
-All resources were developed as part of the [digilego project](https://digilego.eu).
-
-<!--
-A [resource](http://aprs.gids.nl/nmea/) and [another](https://gpsd.gitlab.io/gpsd/NMEA.html) explaining NMEA data.
-
-A [resource](https://gisgeography.com/gps-accuracy-hdop-pdop-gdop-multipath/) explaining GPS accuracy.
--->
